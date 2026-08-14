@@ -1,0 +1,11 @@
+.next/
+node_modules/
+ralph-claude-code/
+.ralph/
+.agents/
+.claude/
+prisma/migrations/
+src/generated/
+docker/nginx/
+public/
+*.md

@@ -1,0 +1,24 @@
+/*
+ * Dizayn-tokenlar (§ kritik yo'l 8) hali to'liq emas — bu faqat skelet uchun
+ * minimal reset. Montserrat va och ko'k + binafsha palitra keyingi bosqichda.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.5;
+}

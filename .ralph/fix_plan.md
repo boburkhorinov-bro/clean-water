@@ -7,15 +7,41 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
 ## High Priority
 
 ### Skelet (kritik yo'l 3)
-- [ ] Next.js (App Router, TypeScript) skeletini yaratish: `src/app`, `src/server`, `src/components`, `src/lib`, `worker/`, `prisma/` — §4.9 dagi tuzilma bo'yicha. ESLint + Prettier + tsconfig strict.
-- [ ] `docker-compose.yml`: `web`, `worker`, `postgres`, `nginx` xizmatlari + `.env.example` (§4.1).
-- [ ] Prisma schema: `User`, `Product`, `CartridgeSpec`, `Compatibility`, `Lead`, `Installation`, `InstalledPart`, `Notification`, `AuditLog` (§5). Birinchi migratsiya + seed skripti.
-- [ ] `(installed_part_id, kind)` bo'yicha unique indeks — takroriy eslatmalarni BD darajasida bloklash (§4.6).
-- [ ] Marshrut guruhlari: `(web)/[locale]`, `(miniapp)/app`, `(admin)/admin`, `api/` — bo'sh layoutlar bilan (§4.3).
-- [ ] i18n uz/ru: URL da til (`/uz`, `/ru`), `hreflang` + canonical, tarjima yo'q bo'lsa uz ga fallback (§4.7).
-- [ ] Telegram avtorizatsiya: `POST /api/auth/telegram` — `initData` HMAC tekshiruvi, `auth_date` < 24h, `User` upsert, JWT httpOnly+Secure+SameSite cookie (§4.4).
-- [ ] Telegram Login Widget bilan brauzerdan kirish — o'sha handler, o'sha sessiya (§4.4).
-- [ ] `requireAdmin()` server-side guard + `TELEGRAM_ADMIN_IDS` env orqali bootstrap adminlar (§4.4).
+- [x] Next.js (App Router, TypeScript) skeletini yaratish: `src/app`, `src/server`, `src/components`, `src/lib`, `worker/`, `prisma/` — §4.9 dagi tuzilma bo'yicha. ESLint + Prettier + tsconfig strict.
+- [x] `docker-compose.yml`: `web`, `worker`, `postgres`, `nginx` xizmatlari + `env.example` (§4.1). **Docker demoni ishga tushirilmagani uchun `docker compose up` sinab ko'rilmagan.**
+- [x] Prisma schema: `User`, `Product`, `CartridgeSpec`, `Compatibility`, `Lead`, `Installation`, `InstalledPart`, `Notification`, `AuditLog` (§5). Birinchi migratsiya + seed skripti. **Migratsiya SQL generatsiya qilingan, lekin haqiqiy bazaga QO'LLANMAGAN — Docker kerak.**
+- [x] `(installed_part_id, kind)` bo'yicha unique indeks — takroriy eslatmalarni BD darajasida bloklash (§4.6). SQL da tasdiqlangan: `notifications_installed_part_id_kind_key`.
+- [x] Marshrut guruhlari: `(web)/[locale]`, `(miniapp)/app`, `(admin)/admin`, `api/` — bo'sh layoutlar bilan (§4.3). Har birida o'z root layouti; `/` → `/uz` redirect `src/proxy.ts` da.
+- [x] i18n uz/ru: URL da til (`/uz`, `/ru`), `hreflang` + canonical, tarjima yo'q bo'lsa uz ga fallback (§4.7).
+      `src/lib/i18n/localized.ts` (fallback, 6 test), `src/lib/i18n/alternates.ts` (hreflang, 6 test).
+      Qurilgan HTML da tasdiqlangan. **Har bir YANGI sahifa o'z `generateMetadata` ida
+      `buildAlternates` ni chaqirishi shart** — layout pathname ni bilmaydi.
+- [x] Telegram avtorizatsiya: `POST /api/auth/telegram` — `initData` HMAC tekshiruvi, `auth_date` < 24h, `User` upsert, JWT httpOnly+Secure+SameSite cookie (§4.4).
+      `telegram-init-data.ts` (12 test), `session.ts` (10 test), `user-repository.ts`,
+      `api/auth/telegram/route.ts`.
+      **Cookie: prodda `SameSite=None; Secure` SHART** — Mini App Telegram iframe i ichida,
+      ya'ni uchinchi tomon konteksti; `Lax` da cookie umuman yuborilmaydi. Dev da `Lax`,
+      chunki `None` brauzerdan `Secure` talab qiladi, lokal HTTP da esa u yo'q.
+      **TEKSHIRILMAGAN: bazaga tegadigan yo'l** (`upsertTelegramUser` va route handler
+      to'liq oqimi) — baza ko'tarilmagan.
+- [~] ~~Telegram Login Widget bilan brauzerdan kirish~~ — **MVP dan CHIQARILDI**
+      (loyiha egasining qarori, 2026-08-14). MVP da saytda kirish tugmasi umuman bo'lmaydi:
+      katalog hammaga ochiq, ariza telefon raqami bilan qoldiriladi (§4.4 dagi «Mehmon»
+      rejimi), shaxsiy kabinet faqat Mini App da.
+      Sabab: Telegram sayt loginini OpenID Connect ga ko'chirgan
+      (`https://oauth.telegram.org/.well-known/jwks.json` — RS256/ES256/EdDSA/ES256K),
+      eski hash-usul arxivda. TZ §4.4 dagi «o'sha imzo tekshiruvi» ishlamaydi —
+      JWKS bo'yicha JWT tekshiruvi (`iss`, `aud=<bot_id>`, `exp`) va `jose` kerak bo'lardi.
+      **DIQQAT: ildizdagi `spec.md` §4.4 hali eski holatda — u bu qarorni aks ettirmaydi.**
+- [x] `requireAdmin()` server-side guard + `TELEGRAM_ADMIN_IDS` env orqali bootstrap adminlar (§4.4).
+      `admin-allowlist.ts` (12 test), `resolve-role.ts` (6 test), `require-admin.ts`.
+      Qoida: **env faqat KO'TARADI** — admin panel orqali berilgan ADMIN har kirishda
+      CLIENT ga tushib qolmaydi. Bo'sh env = hech kim admin emas.
+      Telegram ID lar `bigint` — 2^53 dan katta ID `number` da yaxlitlanib boshqa
+      odamning ID siga aylanib qolardi.
+      Guard `(admin)/admin/layout.tsx` ga ulangan: admin bo'lmasa `notFound()` (403 emas,
+      404 — panel mavjudligini bildirmaslik uchun). Build da tasdiqlangan: `/admin` endi
+      `ƒ` (har so'rovda serverda), avval `○` (statik) edi.
 
 ### Katalog va zayavka (kritik yo'l 4)
 - [ ] `services/` + `repositories/` qatlamlari: biznes-logika React komponentlarida ham, route handler larda ham yozilmaydi (§4.2).
@@ -70,8 +96,19 @@ MVP ga kirmaydi (§2). Menyuda ko'rsatilmaydi — «tez orada» zaglushkalari yo
 
 ## Completed
 - [x] Project enabled for Ralph
+- [x] Skelet: Next.js 16 + Prisma 7 + PostgreSQL 17, Docker qatlami, marshrut guruhlari, i18n asosi
 
 ## Notes
-- To'liq TZ: `.ralph/specs/requirements.md`, dastlabki g'oya: `.ralph/specs/original-idea.md`.
+- **Ralph birinchi 16 ta loopni `--dry-run` rejimida ishlatgan** — `status.json` da
+  `loop_count: 16, status: success` yozilgan, lekin bitta ham fayl yaratilmagan.
+  Progressni `status.json` dan emas, `git log` va shu fayldan tekshiring.
+- **Baza hali ko'tarilmagan.** Docker demoni ishga tushirilmagan, shuning uchun
+  `prisma migrate deploy`, `db:seed` va `docker compose up` sinab ko'rilmagan.
+  Keyingi loopdan oldin: Docker Desktop → `docker compose up -d postgres` →
+  `npx prisma migrate deploy`.
+- **Versiya cheklovlari** `.ralph/AGENT.md` da — TypeScript 6.x va ESLint 9.x
+  ataylab `latest` emas. Ko'tarmang, lint buziladi.
+- To'liq TZ: `.ralph/specs/requirements.md` (ildizdagi `spec.md` bilan sinxron;
+  o'zbekcha tarjimasi — `spec.uz.md`), dastlabki g'oya: `.ralph/specs/original-idea.md`.
 - §9 «Открытые вопросы» hal qilinmagan — ular ishni bloklamaydi, lekin tegishli punktga yetganda savolni `RECOMMENDATION` da qayd et.
 - Har bir yirik bosqichdan keyin bu faylni yangila.

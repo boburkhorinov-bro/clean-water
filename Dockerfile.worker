@@ -1,0 +1,31 @@
+# `worker` konteyneri — Telegram bot webhooki + kunlik eslatmalar
+# rejalashtiruvchisi (§4.1).
+#
+# Alohida konteyner, chunki Next.js ichidagi rejalashtiruvchi ikkinchi instansda
+# dublikatlanadi va har qayta deployda o'ladi.
+
+FROM node:24-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:24-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV TZ=Asia/Tashkent
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json prisma.config.ts ./
+COPY prisma ./prisma
+COPY worker ./worker
+COPY src ./src
+COPY tsconfig.json ./
+
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+RUN npx prisma generate
+ENV DATABASE_URL=""
+
+RUN addgroup -g 1001 -S nodejs && adduser -S worker -u 1001 && chown -R worker:nodejs /app
+USER worker
+
+CMD ["npx", "tsx", "worker/index.ts"]

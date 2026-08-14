@@ -9,12 +9,31 @@
 .ralph/.response_analysis
 .ralph/.circuit_breaker_state
 .ralph/.circuit_breaker_history
+.ralph/.loop_start_sha
+.ralph/.token_count
 
 # Ralph logs and generated docs
 .ralph/logs/*
 !.ralph/logs/.gitkeep
 .ralph/docs/generated/*
 !.ralph/docs/generated/.gitkeep
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Prisma generated client
+/src/generated/
+
+# Environment (secrets never reach the repo — §6)
+.env
+.env.local
+.env.*.local
+
+# Uploaded media (nginx serves it from the host volume — §4.1)
+/media/
 
 # General logs
 *.log

@@ -1,0 +1,247 @@
+// Clean Water — ma'lumotlar modeli (TZ §5).
+// Ma'lumotlar qat'iy relatsion: mijoz → apparat → kartrijlar → almashtirish jadvali.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+// Prisma 7: ulanish satri bu yerda emas. Migratsiyalar uchun `prisma.config.ts`,
+// ilova uchun esa `PrismaPg` adapteri (`src/server/db.ts`) beradi.
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enum lar
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CLIENT
+  ADMIN
+}
+
+enum Locale {
+  UZ
+  RU
+}
+
+enum ProductKind {
+  FILTER
+  CARTRIDGE
+}
+
+enum LeadSource {
+  MINIAPP
+  WEB
+}
+
+enum LeadStatus {
+  NEW
+  IN_WORK
+  DONE
+  REJECTED
+}
+
+/// Eslatma turi (§4.6): `due_at` gacha 30 kun, 7 kun va muddat kelgan kun.
+enum NotificationKind {
+  DAYS_30
+  DAYS_7
+  DUE
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Model lar
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id         String   @id @default(uuid())
+  /// Mini App va Login Widget orqali kirganlarda to'ladi.
+  telegramId BigInt?  @unique @map("telegram_id")
+  /// §4.5: `+998XXXXXXXXX` ga normalizatsiya qilinadi va dublikatlarni
+  /// yopishtirish kaliti bo'lib xizmat qiladi — shuning uchun unique.
+  phone      String?  @unique
+  name       String?
+  lang       Locale   @default(UZ)
+  role       UserRole @default(CLIENT)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  leads         Lead[]
+  installations Installation[]
+  auditLogs     AuditLog[]     @relation("AuditLogAdmin")
+
+  @@map("users")
+}
+
+model Product {
+  id   String      @id @default(uuid())
+  kind ProductKind
+  slug String      @unique
+
+  nameUz String @map("name_uz")
+  nameRu String @map("name_ru")
+
+  /// §4.8: tiplashtirilgan bloklar massivi. Ixtiyoriy HTML saqlanmaydi.
+  contentBlocks Json    @default("[]") @map("content_blocks")
+  /// Narx so'mda. Float emas — pul hisobida yaxlitlash xatosi bo'lmasligi kerak.
+  price         Decimal @db.Decimal(12, 2)
+  /// `/media/...` ko'rinishidagi yo'llar; fayllar diskda, nginx uzatadi (§4.1).
+  images        String[] @default([])
+  /// Kinescope video identifikatori (§4.1 — faqat brauzerdagi iframe).
+  videoId       String?  @map("video_id")
+  isActive      Boolean  @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cartridgeSpec       CartridgeSpec?
+  leads               Lead[]
+  installations       Installation[]  @relation("InstallationFilter")
+  installedParts      InstalledPart[] @relation("InstalledPartCartridge")
+  compatibleFilters   Compatibility[] @relation("CompatibilityCartridge")
+  compatibleCartridges Compatibility[] @relation("CompatibilityFilter")
+
+  @@index([kind, isActive])
+  @@map("products")
+}
+
+/// Faqat `kind = CARTRIDGE` bo'lgan mahsulotlar uchun.
+model CartridgeSpec {
+  id        String @id @default(uuid())
+  productId String @unique @map("product_id")
+  /// §4.6: `due_at` = `installed_at` + shu qiymat.
+  /// Mexanika/ko'mir ≈ 6, postfiltr ≈ 12, membrana ≈ 18–36 oy.
+  resourceMonths Int @map("resource_months")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("cartridge_specs")
+}
+
+/// Kartrij ↔ filtr mosligi (ko'pdan-ko'pga).
+model Compatibility {
+  cartridgeId String @map("cartridge_id")
+  filterId    String @map("filter_id")
+
+  cartridge Product @relation("CompatibilityCartridge", fields: [cartridgeId], references: [id], onDelete: Cascade)
+  filter    Product @relation("CompatibilityFilter", fields: [filterId], references: [id], onDelete: Cascade)
+
+  @@id([cartridgeId, filterId])
+  @@index([filterId])
+  @@map("compatibilities")
+}
+
+model Lead {
+  id String @id @default(uuid())
+
+  /// Mehmon arizasida `userId` bo'sh bo'lishi mumkin — telefon yetarli (§4.4).
+  userId String? @map("user_id")
+  phone  String
+  name   String?
+
+  productId String?    @map("product_id")
+  source    LeadSource
+  status    LeadStatus @default(NEW)
+  comment   String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([phone])
+  @@map("leads")
+}
+
+/// Bitta mijozda bir nechta o'rnatish bo'lishi mumkin (uy, dala hovli) — §5.
+model Installation {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  filterProductId String  @map("filter_product_id")
+  installedAt    DateTime @map("installed_at")
+  address        String?
+  note           String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filterProduct Product         @relation("InstallationFilter", fields: [filterProductId], references: [id])
+  parts         InstalledPart[]
+
+  @@index([userId])
+  @@map("installations")
+}
+
+/// O'rnatilgan aniq kartrij va uning almashtirish muddati.
+model InstalledPart {
+  id                 String    @id @default(uuid())
+  installationId     String    @map("installation_id")
+  cartridgeProductId String    @map("cartridge_product_id")
+  installedAt        DateTime  @map("installed_at")
+  /// §5: buyurtma sanasidan emas, `installed_at` + `resource_months` dan hisoblanadi.
+  dueAt              DateTime  @map("due_at")
+  replacedAt         DateTime? @map("replaced_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  installation      Installation   @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  cartridgeProduct  Product        @relation("InstalledPartCartridge", fields: [cartridgeProductId], references: [id])
+  notifications     Notification[]
+
+  /// Worker har kuni shu indeks bo'yicha tanlaydi (§4.6).
+  @@index([replacedAt, dueAt])
+  @@index([installationId])
+  @@map("installed_parts")
+}
+
+model Notification {
+  id              String             @id @default(uuid())
+  installedPartId String             @map("installed_part_id")
+  kind            NotificationKind
+  scheduledAt     DateTime           @map("scheduled_at")
+  sentAt          DateTime?          @map("sent_at")
+  status          NotificationStatus @default(PENDING)
+  /// Telegram xatosi (masalan `429 retry_after`) tahlil uchun saqlanadi.
+  error           String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  installedPart InstalledPart @relation(fields: [installedPartId], references: [id], onDelete: Cascade)
+
+  /// §4.6 — idempotentlik kafolati MANTIQDA emas, BAZADA.
+  /// Bitta kartrij bo'yicha bitta turdagi eslatma faqat bir marta yuboriladi.
+  @@unique([installedPartId, kind], name: "installed_part_kind")
+  @@index([status, scheduledAt])
+  @@map("notifications")
+}
+
+/// §6 — har bir admin harakati yoziladi.
+model AuditLog {
+  id      String @id @default(uuid())
+  adminId String @map("admin_id")
+  action  String
+  entity  String
+  /// O'zgarish tafsiloti; sirlar bu yerga yozilmaydi.
+  payload Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  admin User @relation("AuditLogAdmin", fields: [adminId], references: [id])
+
+  @@index([adminId, createdAt])
+  @@index([entity, createdAt])
+  @@map("audit_logs")
+}
