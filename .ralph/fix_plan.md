@@ -87,9 +87,35 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
 - [ ] `AuditLog` — har bir admin harakati yoziladi (§7).
 
 ### CRM (kritik yo'l 6)
-- [ ] Mijozlar bazasi, telefon bo'yicha dublikatlarni yopishtirish (bitta mijozda bir nechta `Installation` bo'lishi mumkin).
-- [ ] O'rnatishlarni qayd qilish: `Installation` + `InstalledPart`, `due_at` = `installed_at` + shu kartrijning `resource_months` (zayavka sanasidan emas).
-- [ ] Kartrij almashtirilganini belgilash (`replaced_at`) va keyingi `due_at` ni hisoblash.
+- [x] Mijozlar bazasi, telefon bo'yicha dublikatlarni yopishtirish (bitta mijozda bir nechta `Installation` bo'lishi mumkin).
+      `repositories/client-repository.ts` + `services/clients.ts` (17 integratsiya testi).
+      Qidiruv satri bitta: menejer raqamni mijoz aytganicha yozadi (`+998 90 123-45-67`,
+      `901234567`, oxirgi 4 raqam) yoki ismni kiritadi — servis o'zi ajratadi.
+      Dublikat birlashtirish qayta yozilmadi: `registerClient` `resolveLeadClient` ni
+      chaqiradi, ya'ni CRM da qo'lda qo'shilgan mijoz Telegramdan kelganida ikkinchi
+      yozuv paydo bo'lmaydi.
+- [x] O'rnatishlarni qayd qilish: `Installation` + `InstalledPart`, `due_at` = `installed_at` + shu kartrijning `resource_months` (zayavka sanasidan emas).
+      `services/installations.ts` — `registerInstallation` (15 integratsiya testi),
+      `lib/due-date.ts` (17 birlik testi).
+      **Hisob Toshkent kalendari bo'yicha** — O'zbekiston qat'iy UTC+5, yozgi vaqt yo'q.
+      UTC da hisoblansa oy oxirlarida bir kunlik siljish chiqadi (test bilan qopqoq).
+      Oy oxiri qisqartiriladi: 31-yanvar + 1 oy = 28-fevral (kabisa yilida 29),
+      `Date.setMonth` kabi 3-martga to'kilmaydi.
+      Kartrijning o'z sanasi bo'lishi mumkin: apparat avgustda, membrana oktabrda
+      qo'yilgan bo'lsa, muddat oktabrdan sanaladi.
+      Resurssiz (`CartridgeSpec` yo'q) kartrij **rad etiladi** — u eslatmasiz qolib ketardi.
+      Yozuv tranzaksiyada: bitta kartrij yaroqsiz bo'lsa, o'rnatish ham yozilmaydi.
+      `Compatibility` ataylab tekshirilmaydi — jadval to'liq bo'lmasligi mumkin,
+      usta esa haqiqatda qo'yilgan kartrijni yozishi kerak.
+- [x] Kartrij almashtirilganini belgilash (`replaced_at`) va keyingi `due_at` ni hisoblash.
+      `markPartReplaced` (14 integratsiya testi).
+      **Eski qator yopiladi, o'rniga YANGISI yaratiladi.** Qator qayta ishlatilmaydi,
+      chunki eslatmalar idempotentligi `(installed_part_id, kind)` unikal indeksida —
+      bir qatorda keyingi sikl eslatmalari dublikat sifatida rad etilardi.
+      **Keyingi `due_at` almashtirish sanasidan hisoblanadi, eski `due_at` dan emas:**
+      mijoz kechikib almashtirsa, yangi kartrij o'sha kundan ishlaydi va jadval suriladi.
+      Boshqa modelga almashtirilsa — yangi modelning resursi. Ikkinchi marta
+      almashtirishga urinish rad etiladi (aks holda ikkita «amaldagi» kartrij qolardi).
 
 ### Eslatmalar va «Mening filtrim» (kritik yo'l 7)
 - [ ] Worker: har kuni 09:00 (Toshkent) — `due_at` gacha 30/7/0 kun qolgan `InstalledPart` larni tanlaydi, idempotentlik unique indeks bilan, `429` da `retry_after` ga rioya qiladi (§4.6).
