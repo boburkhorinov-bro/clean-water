@@ -48,20 +48,57 @@ npm dagi `latest` versiyalar bu stek bilan ishlamaydi. Quyidagilar ataylab pastr
 
 Bularni ko'tarishdan oldin `npm run lint` ni haqiqatan ishga tushirib ko'ring.
 
+## Lokal baza: Docker SIZ (bu mashinada)
+
+Docker Desktop bu mashinada ko'tarilmaydi (pastdagi «xotira» bo'limiga qarang),
+shuning uchun lokal PostgreSQL **to'g'ridan-to'g'ri Windows da** ishlaydi.
+
+**Muhim: bu Windows xizmati EMAS.** winget orqali o'rnatish yarim yo'lda uzilgan —
+binarlar ko'chirilgan, lekin `initdb` ham, xizmat ham yaratilmagan. Data papkasi
+qo'lda initsializatsiya qilingan, server qo'lda ishga tushiriladi. Ya'ni
+**kompyuter qayta yuklangandan keyin uni qo'lda ko'tarish kerak.**
+
+```bash
+PGBIN="/c/Program Files/PostgreSQL/17/bin"
+PGDATA="/c/Users/Lenovo/pgdata-cleanwater"
+
+# Ishga tushirish (kamaytirilgan sozlamalar — xotira taqchil)
+"$PGBIN/pg_ctl.exe" -D "$PGDATA" -l "$PGDATA/server.log" \
+  -o "-c shared_buffers=32MB -c max_connections=10 -c listen_addresses=127.0.0.1 -c port=5432" \
+  start > /dev/null 2>&1 </dev/null &
+
+# Tayyorligini kutish
+"$PGBIN/pg_isready.exe" -h 127.0.0.1 -p 5432
+
+# To'xtatish
+"$PGBIN/pg_ctl.exe" -D "$PGDATA" stop
+```
+
+DIQQAT: `pg_ctl` chiqishini `| tail` ga ulasangiz u osilib qoladi — faylga yoki
+`/dev/null` ga yo'naltiring. Va serverni bash vazifasi ichida qoldirmang:
+vazifa to'xtatilsa postgres ham o'ladi.
+
+Ulanish satri (`env.example` dagi bilan bir xil):
+`postgresql://cleanwater:cleanwater@127.0.0.1:5432/cleanwater?schema=public`
+
+Parol `cleanwater` — faqat lokal ishlab chiqish uchun, 127.0.0.1 ga bog'langan.
+Prodda `docker-compose.yml` dagi `postgres` xizmati ishlatiladi.
+
 ## ⚠️ Muhit cheklovi: xotira
 
-Bu mashinada **3.8 GB RAM, bo'sh — 0.3 GB**. Oqibatlari:
+Bu mashinada **3.8 GB RAM, odatda ~0.3–0.5 GB bo'sh**. Eng katta iste'molchilar —
+Claude Code (~930 MB) va VS Code (~400 MB). Oqibatlari:
 
-- **Docker Desktop ko'tarilmaydi.** ~20 daqiqada ham ishga tushmadi. WSL2 backend
-  bir necha GB talab qiladi. Ya'ni `docker compose up`, `prisma migrate deploy`
-  va `npm run db:seed` bu mashinada bajarilmagan va bajarib bo'lmaydi.
-- **`npm run build` beqaror** — TypeScript worker i vaqti-vaqti bilan V8 xotira
-  yetishmasligidan yiqiladi (`Failed to type check`). Qayta ishga tushirilsa o'tadi.
-- **Vitest `threads` puli ishlamaydi** — shuning uchun `vitest.config.ts` da
-  `pool: 'forks'` qadab qo'yilgan.
-
-Build yiqilsa: boshqa dasturlarni yoping va qayta urinib ko'ring. Uzoq muddatli
-yechim — baza va build ni boshqa mashinada (yoki to'g'ridan-to'g'ri VPS da) yuritish.
+- **Docker Desktop ko'tarilmaydi** — WSL2 backend bir necha GB talab qiladi.
+- **PostgreSQL vaqti-vaqti bilan yiqiladi.** Log da
+  `terminated by exception 0xC0000142` (DLL init failure) ko'rinsa — bu xotira
+  yetishmasligi. Baza qayta ko'tarilganda crash-recovery dan o'tadi (~15 s).
+- **`npm run build` beqaror** — TypeScript worker i yiqilishi mumkin
+  (`Failed to type check`). Qayta ishga tushirilsa o'tadi.
+- **Tekshiruvlarni zanjirlab ishga tushirmang.** `npm run lint && npm run typecheck
+  && npm test` bitta buyruqda 10 daqiqada tugamaydi. Alohida-alohida ishga
+  tushiring — har biri ~10 soniya.
+- **Vitest `threads` puli ishlamaydi** — `vitest.config.ts` da `pool: 'forks'`.
 
 ## Prisma 7 xususiyatlari
 

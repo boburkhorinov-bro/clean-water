@@ -8,9 +8,16 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
 
 ### Skelet (kritik yo'l 3)
 - [x] Next.js (App Router, TypeScript) skeletini yaratish: `src/app`, `src/server`, `src/components`, `src/lib`, `worker/`, `prisma/` — §4.9 dagi tuzilma bo'yicha. ESLint + Prettier + tsconfig strict.
-- [x] `docker-compose.yml`: `web`, `worker`, `postgres`, `nginx` xizmatlari + `env.example` (§4.1). **Docker demoni ishga tushirilmagani uchun `docker compose up` sinab ko'rilmagan.**
-- [x] Prisma schema: `User`, `Product`, `CartridgeSpec`, `Compatibility`, `Lead`, `Installation`, `InstalledPart`, `Notification`, `AuditLog` (§5). Birinchi migratsiya + seed skripti. **Migratsiya SQL generatsiya qilingan, lekin haqiqiy bazaga QO'LLANMAGAN — Docker kerak.**
-- [x] `(installed_part_id, kind)` bo'yicha unique indeks — takroriy eslatmalarni BD darajasida bloklash (§4.6). SQL da tasdiqlangan: `notifications_installed_part_id_kind_key`.
+- [x] `docker-compose.yml`: `web`, `worker`, `postgres`, `nginx` xizmatlari + `env.example` (§4.1). **`docker compose up` hamon sinab ko'rilmagan** — Docker Desktop bu mashinada ko'tarilmaydi. Lokal baza Docker siz ishlaydi, `.ralph/AGENT.md` ga qarang.
+- [x] Prisma schema: `User`, `Product`, `CartridgeSpec`, `Compatibility`, `Lead`, `Installation`, `InstalledPart`, `Notification`, `AuditLog` (§5). Birinchi migratsiya + seed skripti.
+      **HAQIQIY BAZADA TASDIQLANDI** (PostgreSQL 17.11, Docker siz): `migrate deploy`
+      qo'llandi, 9 jadval + 7 enum yaratildi, `db:seed` 1 filtr va 3 kartrijni yozdi
+      (6/24/12 oy resurs), ilovaning o'z klienti (`src/server/db.ts`) o'qib oldi.
+- [x] `(installed_part_id, kind)` bo'yicha unique indeks — takroriy eslatmalarni BD darajasida bloklash (§4.6).
+      **HAQIQIY BAZADA TASDIQLANDI**: bir xil `(installed_part_id, kind)` juftini ikkinchi
+      marta qo'shishga urinish `duplicate key value violates unique constraint
+      "notifications_installed_part_id_kind_key"` bilan rad etildi; ayni kartrij uchun
+      DAYS_30 / DAYS_7 / DUE — uchalasi ham qabul qilindi.
 - [x] Marshrut guruhlari: `(web)/[locale]`, `(miniapp)/app`, `(admin)/admin`, `api/` — bo'sh layoutlar bilan (§4.3). Har birida o'z root layouti; `/` → `/uz` redirect `src/proxy.ts` da.
 - [x] i18n uz/ru: URL da til (`/uz`, `/ru`), `hreflang` + canonical, tarjima yo'q bo'lsa uz ga fallback (§4.7).
       `src/lib/i18n/localized.ts` (fallback, 6 test), `src/lib/i18n/alternates.ts` (hreflang, 6 test).
@@ -102,10 +109,12 @@ MVP ga kirmaydi (§2). Menyuda ko'rsatilmaydi — «tez orada» zaglushkalari yo
 - **Ralph birinchi 16 ta loopni `--dry-run` rejimida ishlatgan** — `status.json` da
   `loop_count: 16, status: success` yozilgan, lekin bitta ham fayl yaratilmagan.
   Progressni `status.json` dan emas, `git log` va shu fayldan tekshiring.
-- **Baza hali ko'tarilmagan.** Docker demoni ishga tushirilmagan, shuning uchun
-  `prisma migrate deploy`, `db:seed` va `docker compose up` sinab ko'rilmagan.
-  Keyingi loopdan oldin: Docker Desktop → `docker compose up -d postgres` →
-  `npx prisma migrate deploy`.
+- **Baza ishlayapti, lekin Docker siz va xizmat sifatida emas.** Har safar ishni
+  boshlashdan oldin postgres ni qo'lda ko'tarish kerak — buyruqlar `.ralph/AGENT.md`
+  dagi «Lokal baza» bo'limida. `docker compose up` hamon sinalmagan.
+- **`.env` yaratilmagan.** Ruxsat sozlamalari `.env` ga yozishni taqiqlaydi,
+  shuning uchun barcha buyruqlarda `DATABASE_URL` qo'lda berilgan. Ishni qulay
+  qilish uchun: `cp env.example .env`.
 - **Versiya cheklovlari** `.ralph/AGENT.md` da — TypeScript 6.x va ESLint 9.x
   ataylab `latest` emas. Ko'tarmang, lint buziladi.
 - To'liq TZ: `.ralph/specs/requirements.md` (ildizdagi `spec.md` bilan sinxron;
