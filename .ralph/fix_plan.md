@@ -97,7 +97,14 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
 - [ ] «Mening filtrim» ekrani: o'rnatilgan apparat, kartrijlar, real ma'lumotdan hisoblangan resurs shkalasi, almashtirishga buyurtma tugmasi.
 
 ### UI va dizayn (kritik yo'l 8)
-- [ ] Dizayn-tokenlar: Montserrat, och ko'k + binafsha palitra, yorug'/qorong'i tema (Mini App da tema Telegram dan olinadi, qo'lda almashtiriladi).
+- [x] Dizayn-tokenlar: Montserrat, och ko'k + binafsha palitra, yorug'/qorong'i tema (Mini App da tema Telegram dan olinadi, qo'lda almashtiriladi).
+      `src/app/tokens.css`, `src/app/fonts.ts`, `src/lib/theme.ts` (7 test),
+      `components/ui/ThemeToggle.tsx` + `theme-store.ts`, `TelegramTheme.tsx`.
+      **Bu punkt katalog UI dan OLDIN bajarildi** (reja tartibidan chetlanish):
+      tokensiz yozilgan sahifalar keyin qayta yozilardi.
+      Montserrat `next/font` orqali — CSP `font-src 'self'` tashqi yuklashni
+      bloklaydi. Qurilgan HTML da tekshirilgan: tashqi so'rov yo'q.
+      Mavzu ustunligi: qo'lda tanlov > Telegram > tizim.
 - [ ] Dashboard: banner «CLEAN WATER ga xush kelibsiz» + katalogga o'tish. Dekorativ progress-shkala yo'q — faqat real ma'lumot.
 - [ ] Responsive tekshiruv + PWA manifest.
 
