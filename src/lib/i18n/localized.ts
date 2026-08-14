@@ -1,7 +1,13 @@
 import { DEFAULT_LOCALE, LOCALES, type Locale } from './locales';
 
-/** Ikkala tilni bitta yozuvda saqlaydigan matn (§4.7). */
-export type LocalizedText = Partial<Record<Locale, string>>;
+/**
+ * Ikkala tilni bitta yozuvda saqlaydigan matn (§4.7).
+ *
+ * `| undefined` ataylab yozilgan: `exactOptionalPropertyTypes` yoqilgan, ya'ni
+ * `{ uz: undefined }` bilan `{}` bir xil emas. zod dan chiqadigan tiplar esa
+ * aynan birinchi ko'rinishda bo'ladi.
+ */
+export type LocalizedText = { [K in Locale]?: string | undefined };
 
 function nonEmpty(value: string | undefined): string | undefined {
   if (value === undefined) return undefined;

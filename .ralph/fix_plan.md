@@ -51,12 +51,28 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
       `ƒ` (har so'rovda serverda), avval `○` (statik) edi.
 
 ### Katalog va zayavka (kritik yo'l 4)
-- [ ] `services/` + `repositories/` qatlamlari: biznes-logika React komponentlarida ham, route handler larda ham yozilmaydi (§4.2).
-- [ ] Kontent-bloklar renderi: `heading|paragraph|image|specs|video` tiplari React komponentlariga map qilinadi. `dangerouslySetInnerHTML` hech qayerda ishlatilmaydi (§4.8).
+- [x] `services/` + `repositories/` qatlamlari: biznes-logika React komponentlarida ham, route handler larda ham yozilmaydi (§4.2).
+      `repositories/product-repository.ts` (so'rovlar), `services/catalog.ts` (shakllantirish),
+      `services/leads.ts`, `services/resolve-client.ts`. 9 integratsiya testi.
+- [x] Kontent-bloklar renderi: `heading|paragraph|image|specs|video` tiplari React komponentlariga map qilinadi. `dangerouslySetInnerHTML` hech qayerda ishlatilmaydi (§4.8).
+      `lib/content-blocks.ts` (zod sxema, 13 test) + `components/content/ContentBlocks.tsx` (10 test).
+      Sxema rasm manzilini `/media/` bilan cheklaydi (`javascript:`, `data:`, tashqi manzil,
+      `..` — hammasi rad etiladi) va video id ni harf-raqam bilan (u iframe manziliga tushadi).
+      Renderer testi ekranlashni `renderToStaticMarkup` orqali haqiqiy HTML da tekshiradi.
 - [ ] Filtrlar katalogi: ro'yxat + mahsulot kartochkasi (foto, xarakteristika, narx, Kinescope video, tavsif bloklari). Komponentlar web va Mini App uchun umumiy.
+      Servis qatlami tayyor (`listFilters`, `getFilterBySlug`); QOLDI: UI sahifalari.
 - [ ] Kartrijlar katalogi: moslik (`Compatibility`) va resurs (`resource_months`) ko'rsatilgan holda.
-- [ ] `POST /api/leads`: zod validatsiya, IP va Telegram ID bo'yicha rate-limit, telefonni `+998XXXXXXXXX` ga normalizatsiya, dublikat mijozni yopishtirish, `Lead(status=new)` yozish — javob shu yerda qaytariladi (§4.5).
-- [ ] Menejerlar guruhiga asinxron Telegram xabarnoma + «Взять в работу» inline tugmasi, xatoda qayta urinish. Telegram ishlamasa ham zayavka yo'qolmaydi (§4.5).
+      Servis qatlami tayyor (`listCartridges`, `getCartridgesForFilter`); QOLDI: UI sahifalari.
+- [x] `POST /api/leads`: zod validatsiya, IP va Telegram ID bo'yicha rate-limit, telefonni `+998XXXXXXXXX` ga normalizatsiya, dublikat mijozni yopishtirish, `Lead(status=new)` yozish — javob shu yerda qaytariladi (§4.5).
+      `lib/phone.ts` (15 test), `server/rate-limit.ts` (6 test), `services/leads.ts` (11 integratsiya testi).
+      **Dublikat birlashtirish haqiqiy bazada tekshirilgan**: mehmon + Telegram yozuvlari bittaga
+      qo'shiladi, arizalar va o'rnatishlar omon qolgan profilga ko'chadi (`resolve-client`, 10 test).
+- [x] Menejerlar guruhiga asinxron Telegram xabarnoma + «Ishga olish» inline tugmasi, xatoda qayta urinish. Telegram ishlamasa ham zayavka yo'qolmaydi (§4.5).
+      `server/telegram/notify-manager.ts`, 12 test. Xabar Telegram HTML rejimida ketadi,
+      shuning uchun mijoz ismi va izohi ekranlanadi. 429 da Telegram bergan `retry_after`
+      hurmat qilinadi.
+      **Eng muhim tekshiruv**: xabarnoma yiqilsa HAM, osilib qolsa HAM ariza bazada qoladi
+      va mijozga muvaffaqiyat qaytariladi.
 
 ### Admin panel (kritik yo'l 5)
 - [ ] Adminka: mahsulotlar CRUD (filtrlar va kartrijlar, ikki tilda).

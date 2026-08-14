@@ -15,7 +15,20 @@ npm run build
 ```bash
 npm run lint             # eslint
 npm run typecheck        # tsc --noEmit
-npm test                 # vitest (hozircha testlar yo'q)
+npm test                 # birlik testlari — baza kerak emas
+npm run test:int         # integratsiya testlari — HAQIQIY bazani talab qiladi
+```
+
+DIQQAT: bularni `&&` bilan zanjirlamang — xotira taqchilligi tufayli osilib
+qoladi. Alohida-alohida ishga tushiring.
+
+Integratsiya testlari `cleanwater_test` bazasida ishlaydi (ishlab chiqish
+bazasiga tegmaydi — `src/test/int-setup.ts` buni majburlaydi). Birinchi marta:
+
+```bash
+psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE cleanwater_test OWNER cleanwater;"
+DATABASE_URL="postgresql://cleanwater:cleanwater@127.0.0.1:5432/cleanwater_test?schema=public" \
+  npx prisma migrate deploy
 ```
 
 ## Run Instructions
