@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { montserrat } from '@/app/fonts';
 import { LOCALES, isLocale } from '@/lib/i18n/locales';
 import '../../globals.css';
 
@@ -24,7 +25,7 @@ export default async function WebLayout({
   if (!isLocale(locale)) notFound();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={montserrat.variable}>
       <body>{children}</body>
     </html>
   );

@@ -67,7 +67,18 @@ export async function getCartridgeBySlug(slug: string): Promise<CatalogProduct |
   return row ? toCatalogProduct(row) : null;
 }
 
-export async function getCartridgesForFilter(filterId: string): Promise<CatalogProduct[]> {
+/**
+ * Filtrning tozalash bosqichlari (§3).
+ *
+ * `stage` — haqiqiy ma'lumot: mexanik → ko'mir → membrana. U berilmagan
+ * bo'lsa `null` qaytadi va kartochka raqamsiz ro'yxat chizadi. O'ylab
+ * topilgan tartibni ko'rsatish — aynan §3 rad etgan dekorativ narsa.
+ */
+export interface FilterStage extends CatalogProduct {
+  stage: number | null;
+}
+
+export async function getCartridgesForFilter(filterId: string): Promise<FilterStage[]> {
   const rows = await findCartridgesCompatibleWith(filterId);
-  return rows.map(toCatalogProduct);
+  return rows.map((row) => ({ ...toCatalogProduct(row.cartridge), stage: row.stage }));
 }

@@ -1,0 +1,29 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--cw-border);
+  border-radius: 50%;
+  background: var(--cw-surface-raised);
+  color: var(--cw-text);
+  font-size: var(--cw-text-base);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--cw-shadow-sm);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.toggle:hover {
+  border-color: var(--cw-accent);
+}
+
+/* Klient render qilgunga qadar joyni saqlab turadi — sarlavha sakramaydi. */
+.placeholder {
+  display: inline-block;
+  width: 2.25rem;
+  height: 2.25rem;
+}

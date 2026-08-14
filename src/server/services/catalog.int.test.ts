@@ -118,6 +118,58 @@ describe('katalog servisi', () => {
     expect(await getCartridgesForFilter(otherFilter.id)).toEqual([]);
   });
 
+  test('BOSQICHLAR tartibi alifbo emas, `stage` bo‘yicha (§3)', async () => {
+    // Haqiqiy tozalash yo'li: mexanik → ko'mir → membrana. Alifbo bo'yicha
+    // esa bu ketma-ketlik buziladi — aynan shuning uchun `stage` kerak.
+    const filter = await prisma.product.create({
+      data: { kind: 'FILTER', slug: 'f', nameUz: 'F', nameRu: 'F', price: '1' },
+    });
+    const make = async (slug: string, name: string) =>
+      prisma.product.create({
+        data: { kind: 'CARTRIDGE', slug, nameUz: name, nameRu: name, price: '1' },
+      });
+
+    const membrana = await make('c-membrana', 'AAA membrana');
+    const mexanik = await make('c-mexanik', 'ZZZ mexanik');
+    const komir = await make('c-komir', 'MMM ko‘mir');
+
+    await prisma.compatibility.createMany({
+      data: [
+        { cartridgeId: mexanik.id, filterId: filter.id, stage: 1 },
+        { cartridgeId: komir.id, filterId: filter.id, stage: 2 },
+        { cartridgeId: membrana.id, filterId: filter.id, stage: 3 },
+      ],
+    });
+
+    const stages = await getCartridgesForFilter(filter.id);
+
+    expect(stages.map((s) => s.slug)).toEqual(['c-mexanik', 'c-komir', 'c-membrana']);
+    expect(stages.map((s) => s.stage)).toEqual([1, 2, 3]);
+  });
+
+  test('tartibsiz mosliklar oxirida keladi, raqamsiz holda', async () => {
+    const filter = await prisma.product.create({
+      data: { kind: 'FILTER', slug: 'f2', nameUz: 'F2', nameRu: 'F2', price: '1' },
+    });
+    const withStage = await prisma.product.create({
+      data: { kind: 'CARTRIDGE', slug: 'bilan', nameUz: 'Bilan', nameRu: 'Bilan', price: '1' },
+    });
+    const without = await prisma.product.create({
+      data: { kind: 'CARTRIDGE', slug: 'siz', nameUz: 'Aaa', nameRu: 'Aaa', price: '1' },
+    });
+    await prisma.compatibility.createMany({
+      data: [
+        { cartridgeId: without.id, filterId: filter.id },
+        { cartridgeId: withStage.id, filterId: filter.id, stage: 1 },
+      ],
+    });
+
+    const stages = await getCartridgesForFilter(filter.id);
+
+    expect(stages.map((s) => s.slug)).toEqual(['bilan', 'siz']);
+    expect(stages[1]?.stage).toBeNull();
+  });
+
   test('narx satr sifatida va aniq qaytariladi — pul float ga aylanmaydi', async () => {
     await seedCatalog();
     await prisma.product.create({

@@ -1,0 +1,140 @@
+/*
+ * Dizayn-tokenlar (kritik yo'l 8).
+ *
+ * Palitra TZ dan keladi va o'zgartirilmaydi: och ko'k (osmon rangi) + binafsha.
+ * «Kun» — oq va binafsha, «Tun» — binafsha va to'q ko'k.
+ *
+ * Uchta manba bir tizimga keltiriladi:
+ *   1. `:root`            — «Kun» (standart)
+ *   2. tizim sozlamasi    — foydalanuvchi qo'lda tanlamagan bo'lsa
+ *   3. `[data-theme]`     — qo'lda tanlov, u har doim ustun
+ *
+ * Mini App da mavzu Telegram dan keladi (§3) — `tg-theme.css` ga qarang.
+ */
+
+:root {
+  /* ── Rang: «Kun» ─────────────────────────────────────────────────────── */
+  --cw-bg: #ffffff;
+  --cw-surface: #f5f7fd;
+  --cw-surface-raised: #ffffff;
+  --cw-border: #e2e6f3;
+  --cw-text: #0f1330;
+  --cw-text-muted: #565d80;
+
+  /* Binafsha — asosiy harakat rangi. */
+  --cw-accent: #5b3fd9;
+  --cw-accent-hover: #4a31bd;
+  --cw-accent-contrast: #ffffff;
+
+  /* Osmon rangi — suv va tozalash bosqichlari uchun. */
+  --cw-sky: #2e8fe8;
+  --cw-sky-soft: #d9ecfd;
+
+  --cw-danger: #c02b3c;
+  --cw-success: #1f7a4d;
+
+  /* Kartrij resursi shkalasi — faqat haqiqiy ma'lumot (§3). */
+  --cw-gauge-track: #e6eaf6;
+  --cw-gauge-ok: #1f7a4d;
+  --cw-gauge-soon: #b8791a;
+  --cw-gauge-due: #c02b3c;
+
+  /* ── Tipografika ─────────────────────────────────────────────────────── */
+  /* Montserrat geometrik shrift: katta o'lchamlarda harflar orasi keng
+     ko'rinadi, shuning uchun display darajalarda tracking manfiy. */
+  --cw-font: var(--font-montserrat), system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --cw-text-xs: 0.75rem;
+  --cw-text-sm: 0.875rem;
+  --cw-text-base: 1rem;
+  --cw-text-lg: 1.125rem;
+  --cw-text-xl: 1.375rem;
+  --cw-text-2xl: 1.75rem;
+  --cw-text-3xl: 2.25rem;
+  --cw-text-4xl: 3rem;
+
+  --cw-tracking-display: -0.02em;
+  --cw-tracking-tight: -0.01em;
+  --cw-tracking-label: 0.08em;
+
+  /* ── Masofa va shakl ─────────────────────────────────────────────────── */
+  --cw-space-1: 0.25rem;
+  --cw-space-2: 0.5rem;
+  --cw-space-3: 0.75rem;
+  --cw-space-4: 1rem;
+  --cw-space-6: 1.5rem;
+  --cw-space-8: 2rem;
+  --cw-space-12: 3rem;
+  --cw-space-16: 4rem;
+
+  --cw-radius-sm: 6px;
+  --cw-radius: 12px;
+  --cw-radius-lg: 20px;
+
+  /* «Tabiiy tugmalar» (prompt.md) — tekis emas, sezilarli chuqurlikda. */
+  --cw-shadow-sm: 0 1px 2px rgb(15 19 48 / 8%);
+  --cw-shadow: 0 2px 8px rgb(15 19 48 / 10%);
+  --cw-shadow-raised: 0 8px 24px rgb(15 19 48 / 12%);
+
+  --cw-container: 1120px;
+}
+
+/* Tizim «tun» ni so'rasa, lekin foydalanuvchi «kun» ni QO'LDA tanlamagan bo'lsa. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --cw-bg: #0a0e24;
+    --cw-surface: #131a3d;
+    --cw-surface-raised: #1a2350;
+    --cw-border: #253061;
+    --cw-text: #edeff9;
+    --cw-text-muted: #9aa2c7;
+
+    --cw-accent: #8b6bff;
+    --cw-accent-hover: #a184ff;
+    --cw-accent-contrast: #0a0e24;
+
+    --cw-sky: #55b3ff;
+    --cw-sky-soft: #16305c;
+
+    --cw-danger: #ff8087;
+    --cw-success: #52c48c;
+
+    --cw-gauge-track: #253061;
+    --cw-gauge-ok: #52c48c;
+    --cw-gauge-soon: #e8b34a;
+    --cw-gauge-due: #ff8087;
+
+    --cw-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --cw-shadow: 0 2px 10px rgb(0 0 0 / 45%);
+    --cw-shadow-raised: 0 10px 28px rgb(0 0 0 / 55%);
+  }
+}
+
+/* Qo'lda tanlangan «Tun» — tizim sozlamasidan qat'i nazar. */
+:root[data-theme='dark'] {
+  --cw-bg: #0a0e24;
+  --cw-surface: #131a3d;
+  --cw-surface-raised: #1a2350;
+  --cw-border: #253061;
+  --cw-text: #edeff9;
+  --cw-text-muted: #9aa2c7;
+
+  --cw-accent: #8b6bff;
+  --cw-accent-hover: #a184ff;
+  --cw-accent-contrast: #0a0e24;
+
+  --cw-sky: #55b3ff;
+  --cw-sky-soft: #16305c;
+
+  --cw-danger: #ff8087;
+  --cw-success: #52c48c;
+
+  --cw-gauge-track: #253061;
+  --cw-gauge-ok: #52c48c;
+  --cw-gauge-soon: #e8b34a;
+  --cw-gauge-due: #ff8087;
+
+  --cw-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --cw-shadow: 0 2px 10px rgb(0 0 0 / 45%);
+  --cw-shadow-raised: 0 10px 28px rgb(0 0 0 / 55%);
+}

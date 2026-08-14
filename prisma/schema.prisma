@@ -131,11 +131,18 @@ model Compatibility {
   cartridgeId String @map("cartridge_id")
   filterId    String @map("filter_id")
 
+  /// Tozalash bosqichi tartibi: 1 — mexanik, 2 — ko'mir, 3 — membrana va h.k.
+  /// §3: mahsulot kartochkasidagi bosqichlar shkalasi HAQIQIY ma'lumotni
+  /// ko'rsatishi kerak. Tartib berilmasa, kartochkada raqamsiz ro'yxat
+  /// chiqadi — o'ylab topilgan tartibni ko'rsatishdan ko'ra shunisi to'g'ri.
+  stage Int?
+
   cartridge Product @relation("CompatibilityCartridge", fields: [cartridgeId], references: [id], onDelete: Cascade)
   filter    Product @relation("CompatibilityFilter", fields: [filterId], references: [id], onDelete: Cascade)
 
   @@id([cartridgeId, filterId])
   @@index([filterId])
+  @@index([filterId, stage])
   @@map("compatibilities")
 }
 

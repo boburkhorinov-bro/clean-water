@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { montserrat } from '@/app/fonts';
 import { getSession } from '@/server/auth/require-admin';
 import '../../globals.css';
 
@@ -17,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (session?.role !== 'ADMIN') notFound();
 
   return (
-    <html lang="ru">
+    <html lang="ru" className={montserrat.variable}>
       <body>{children}</body>
     </html>
   );

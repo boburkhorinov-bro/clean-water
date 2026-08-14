@@ -24,15 +24,17 @@ export function findProductBySlug(slug: string, kind: 'FILTER' | 'CARTRIDGE') {
   });
 }
 
-/** Berilgan filtrga mos, faol kartrijlar (§2 — moslik). */
+/**
+ * Berilgan filtrga mos, faol kartrijlar (§2 — moslik).
+ *
+ * So'rov `Compatibility` dan boshlanadi, chunki bosqich tartibi (`stage`)
+ * aynan shu jadvalda. Tartibsiz mosliklar oxirida keladi: PostgreSQL da
+ * `ASC` uchun `NULL` lar oxirgi.
+ */
 export function findCartridgesCompatibleWith(filterId: string) {
-  return prisma.product.findMany({
-    where: {
-      kind: 'CARTRIDGE',
-      ...activeOnly,
-      compatibleFilters: { some: { filterId } },
-    },
-    include: { cartridgeSpec: true },
-    orderBy: { nameUz: 'asc' },
+  return prisma.compatibility.findMany({
+    where: { filterId, cartridge: activeOnly },
+    include: { cartridge: { include: { cartridgeSpec: true } } },
+    orderBy: [{ stage: 'asc' }, { cartridge: { nameUz: 'asc' } }],
   });
 }

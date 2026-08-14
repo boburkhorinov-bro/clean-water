@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { montserrat } from '@/app/fonts';
+import { TelegramTheme } from '@/components/ui/TelegramTheme';
 import '../../globals.css';
 
 /** Mini App indekslanmaydi (§4.3). */
@@ -8,10 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default function MiniAppLayout({ children }: { children: React.ReactNode }) {
-  // Mavzu Telegram dan olinadi (§3) — dizayn-tokenlar bilan birga qo'shiladi.
   return (
-    <html lang="uz">
-      <body>{children}</body>
+    <html lang="uz" className={montserrat.variable}>
+      <body>
+        {/* §3: mavzu Telegram dan olinadi, brending esa saqlanadi. */}
+        <TelegramTheme />
+        {children}
+      </body>
     </html>
   );
 }
