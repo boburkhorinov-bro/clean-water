@@ -1,0 +1,127 @@
+.page {
+  max-width: var(--cw-container);
+  margin: 0 auto;
+  padding: var(--cw-space-8) var(--cw-space-4) var(--cw-space-16);
+}
+
+.head {
+  margin-bottom: var(--cw-space-8);
+  max-width: 44ch;
+}
+
+.lead {
+  margin: var(--cw-space-3) 0 0;
+  color: var(--cw-text-muted);
+  font-size: var(--cw-text-lg);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--cw-space-6);
+}
+
+.empty {
+  color: var(--cw-text-muted);
+}
+
+/* ── Mahsulot sahifasi ───────────────────────────────────────────────── */
+
+.product {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: var(--cw-space-12);
+  align-items: start;
+}
+
+.productMain {
+  min-width: 0;
+}
+
+.productAside {
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-6);
+}
+
+.priceBox {
+  padding: var(--cw-space-6);
+  background: var(--cw-surface);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-lg);
+}
+
+.priceLabel {
+  margin: 0;
+  font-size: var(--cw-text-sm);
+  color: var(--cw-text-muted);
+}
+
+.priceValue {
+  margin: var(--cw-space-1) 0 0;
+  font-size: var(--cw-text-3xl);
+  font-weight: 700;
+  letter-spacing: var(--cw-tracking-display);
+}
+
+.priceCurrency {
+  font-size: var(--cw-text-lg);
+  font-weight: 500;
+  color: var(--cw-text-muted);
+}
+
+.section {
+  margin-top: var(--cw-space-12);
+}
+
+.sectionTitle {
+  font-size: var(--cw-text-xl);
+  margin-bottom: var(--cw-space-4);
+}
+
+/* Kontent-bloklardan keladigan jadval va rasmlar. */
+.content :global(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--cw-space-4) 0;
+}
+
+.content :global(th),
+.content :global(td) {
+  text-align: start;
+  padding: var(--cw-space-2) var(--cw-space-3);
+  border-bottom: 1px solid var(--cw-border);
+  font-size: var(--cw-text-sm);
+}
+
+.content :global(th) {
+  color: var(--cw-text-muted);
+  font-weight: 500;
+  width: 45%;
+}
+
+.content :global(img) {
+  border-radius: var(--cw-radius);
+  margin: var(--cw-space-4) 0;
+}
+
+.content :global(iframe) {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--cw-radius);
+  margin: var(--cw-space-4) 0;
+}
+
+@media (max-width: 860px) {
+  .product {
+    grid-template-columns: 1fr;
+    gap: var(--cw-space-8);
+  }
+
+  .productAside {
+    position: static;
+  }
+}

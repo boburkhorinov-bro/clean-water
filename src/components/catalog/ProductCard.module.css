@@ -1,0 +1,78 @@
+.card {
+  background: var(--cw-surface-raised);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius);
+  overflow: hidden;
+  box-shadow: var(--cw-shadow-sm);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cw-shadow-raised);
+  border-color: color-mix(in srgb, var(--cw-accent) 40%, var(--cw-border));
+}
+
+.link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.media {
+  aspect-ratio: 4 / 3;
+  background: var(--cw-surface);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Rasm yo'q bo'lganda — bo'sh kvadrat emas, suv tomchisi ishorasi. */
+.placeholder {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(45deg);
+  background: linear-gradient(140deg, var(--cw-sky-soft), var(--cw-surface));
+  border: 1px solid var(--cw-border);
+}
+
+.body {
+  padding: var(--cw-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-2);
+}
+
+.name {
+  font-size: var(--cw-text-lg);
+  line-height: 1.25;
+}
+
+.resource {
+  margin: 0;
+  font-size: var(--cw-text-sm);
+  color: var(--cw-text-muted);
+}
+
+.price {
+  margin: 0;
+  font-size: var(--cw-text-xl);
+  font-weight: 700;
+  letter-spacing: var(--cw-tracking-display);
+}
+
+.currency {
+  font-size: var(--cw-text-sm);
+  font-weight: 500;
+  color: var(--cw-text-muted);
+}

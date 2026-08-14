@@ -59,10 +59,16 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
       Sxema rasm manzilini `/media/` bilan cheklaydi (`javascript:`, `data:`, tashqi manzil,
       `..` — hammasi rad etiladi) va video id ni harf-raqam bilan (u iframe manziliga tushadi).
       Renderer testi ekranlashni `renderToStaticMarkup` orqali haqiqiy HTML da tekshiradi.
-- [ ] Filtrlar katalogi: ro'yxat + mahsulot kartochkasi (foto, xarakteristika, narx, Kinescope video, tavsif bloklari). Komponentlar web va Mini App uchun umumiy.
-      Servis qatlami tayyor (`listFilters`, `getFilterBySlug`); QOLDI: UI sahifalari.
-- [ ] Kartrijlar katalogi: moslik (`Compatibility`) va resurs (`resource_months`) ko'rsatilgan holda.
-      Servis qatlami tayyor (`listCartridges`, `getCartridgesForFilter`); QOLDI: UI sahifalari.
+- [x] Filtrlar katalogi: ro'yxat + mahsulot kartochkasi (foto, xarakteristika, narx, Kinescope video, tavsif bloklari). Komponentlar web va Mini App uchun umumiy.
+      `/[locale]/filtrlar` (ISR, 60 s) va `/[locale]/filtrlar/[slug]`.
+      **ISHLAYOTGAN SERVERDA TASDIQLANDI**: seed mahsuloti chiqdi, narx
+      `2 500 000` uzilmas bo'shliq bilan, canonical va hreflang to'g'ri.
+- [x] Kartrijlar katalogi: moslik (`Compatibility`) va resurs (`resource_months`) ko'rsatilgan holda.
+      `/[locale]/kartrijlar` va `/[locale]/kartrijlar/[slug]`. `/ru/kartrijlar` da
+      ruscha nomlar chiqishi tekshirildi.
+      Mahsulot sahifasidagi `StageStack` — §3 dagi bosqichlar shkalasi. Raqamlar
+      faqat `Compatibility.stage` berilganda chiqadi; seed da u yo'q, shuning uchun
+      raqamsiz ro'yxat chiqdi — kutilganidek.
 - [x] `POST /api/leads`: zod validatsiya, IP va Telegram ID bo'yicha rate-limit, telefonni `+998XXXXXXXXX` ga normalizatsiya, dublikat mijozni yopishtirish, `Lead(status=new)` yozish — javob shu yerda qaytariladi (§4.5).
       `lib/phone.ts` (15 test), `server/rate-limit.ts` (6 test), `services/leads.ts` (11 integratsiya testi).
       **Dublikat birlashtirish haqiqiy bazada tekshirilgan**: mehmon + Telegram yozuvlari bittaga

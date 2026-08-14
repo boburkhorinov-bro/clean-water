@@ -1,0 +1,99 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-3);
+  padding: var(--cw-space-6);
+  background: var(--cw-surface);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-lg);
+}
+
+.title {
+  font-size: var(--cw-text-xl);
+}
+
+.lead {
+  margin: 0;
+  color: var(--cw-text-muted);
+  font-size: var(--cw-text-sm);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-1);
+}
+
+.label {
+  font-size: var(--cw-text-sm);
+  font-weight: 600;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--cw-text-muted);
+}
+
+.input,
+.textarea {
+  font: inherit;
+  color: var(--cw-text);
+  background: var(--cw-surface-raised);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-sm);
+  padding: 0.6rem 0.75rem;
+  width: 100%;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  border-color: var(--cw-accent);
+}
+
+/* «Tabiiy tugma» (prompt.md): tekis emas, bosilganda javob beradi. */
+.submit {
+  font: inherit;
+  font-weight: 600;
+  color: var(--cw-accent-contrast);
+  background: var(--cw-accent);
+  border: none;
+  border-radius: var(--cw-radius-sm);
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  box-shadow: var(--cw-shadow);
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--cw-accent-hover);
+}
+
+.submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.error {
+  margin: 0;
+  color: var(--cw-danger);
+  font-size: var(--cw-text-sm);
+}
+
+.success {
+  margin: 0;
+  padding: var(--cw-space-6);
+  background: var(--cw-surface);
+  border: 1px solid color-mix(in srgb, var(--cw-success) 35%, var(--cw-border));
+  border-radius: var(--cw-radius-lg);
+  color: var(--cw-text);
+}

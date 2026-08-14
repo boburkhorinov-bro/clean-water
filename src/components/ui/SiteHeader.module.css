@@ -1,0 +1,89 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--cw-bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--cw-border);
+}
+
+.inner {
+  max-width: var(--cw-container);
+  margin: 0 auto;
+  padding: var(--cw-space-3) var(--cw-space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-4);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cw-space-2);
+  color: var(--cw-text);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: var(--cw-tracking-display);
+}
+
+/*
+ * Brend belgisi: binafshadan osmon rangiga o'tuvchi tomchi.
+ * Suv o'tadigan yo'lning eng qisqa ifodasi — logotip fayli kelgunga qadar.
+ */
+.mark {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(45deg);
+  background: linear-gradient(140deg, var(--cw-accent), var(--cw-sky));
+  flex: none;
+}
+
+.brandName {
+  font-size: var(--cw-text-lg);
+}
+
+.nav {
+  display: flex;
+  gap: var(--cw-space-4);
+  margin-inline-start: var(--cw-space-4);
+}
+
+.navLink {
+  color: var(--cw-text-muted);
+  text-decoration: none;
+  font-size: var(--cw-text-sm);
+  font-weight: 500;
+  padding: var(--cw-space-2) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.navLink:hover {
+  color: var(--cw-text);
+  border-bottom-color: var(--cw-accent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-2);
+  margin-inline-start: auto;
+}
+
+@media (max-width: 640px) {
+  .inner {
+    flex-wrap: wrap;
+    gap: var(--cw-space-2);
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-inline-start: 0;
+    gap: var(--cw-space-3);
+  }
+
+  .brandName {
+    font-size: var(--cw-text-base);
+  }
+}
