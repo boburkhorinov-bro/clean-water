@@ -10,7 +10,7 @@ Osmos filtrlar va kartrijlar sotuvi platformasi, almashtirish muddati haqida avt
 
 **Ikkita interfeys, bitta kod bazasi:**
 - **Telegram Mini App** — asosiy kanal. Avtorizatsiya `initData` orqali, mijoz Telegram ID boʻyicha aniqlanadi.
-- **Ommaviy sayt** — brauzerdagi oʻsha katalog, qidiruv tizimlari tomonidan indekslanadi. Kirish Telegram Login Widget orqali; arizani kirmasdan ham, telefon raqami boʻyicha qoldirish mumkin.
+- **Ommaviy sayt** — brauzerdagi oʻsha katalog, qidiruv tizimlari tomonidan indekslanadi. MVP da kirish yoʻq (4.4 ga qarang); ariza telefon raqami boʻyicha qoldiriladi.
 
 **Stek:** Next.js (SSR — SEO uchun kerak) + PostgreSQL + Prisma, hammasi Docker ichida.
 **Xosting:** Oʻzbekiston (OʻzR fuqarolarining shaxsiy maʼlumotlarini lokalizatsiya qilish talabi).
@@ -133,11 +133,23 @@ Mini App:  WebApp.initData
              → auth_date tekshiruvi (24 soatdan eski emas)
              → telegram_id boʻyicha User upsert
              → JWT httpOnly + Secure + SameSite cookie ga
-Brauzer:   Telegram Login Widget
-             → oʻsha handler, oʻsha imzo tekshiruvi
-             → oʻsha cookie-sessiya
+Brauzer:   kirish yoʻq (pastga qarang)
 Mehmon:    sessiya yoʻq. Katalog va telefon boʻyicha ariza formasi mavjud.
 ```
+
+**2026-08-14 dagi oʻzgarish: MVP da brauzerdan kirish yoʻq.** Dastlab bu yerda
+Telegram Login Widget — oʻsha handler, oʻsha imzo tekshiruvi bilan — turgan edi.
+Bu endi ishlamaydi: Telegram saytlar uchun kirishni OpenID Connect ga koʻchirgan.
+`https://oauth.telegram.org/.well-known/jwks.json` tirik kalitlar toʻplamini
+qaytaradi (RS256, ES256, EdDSA, ES256K), eski hash tekshiruvi esa arxivga
+oʻtkazilgan. Bu «oʻsha imzo tekshiruvi» emas, boshqa protokol: JWT ni JWKS
+boʻyicha tekshirish, `iss`, `aud=<bot_id>` va `exp` validatsiyasi hamda
+alohida kutubxona kerak.
+
+Loyiha egasining qarori: saytda kirish tugmasi umuman boʻlmaydi. Katalog
+hammaga ochiq, ariza telefon raqami boʻyicha qoldiriladi (yuqoridagi «Mehmon»
+rejimi), shaxsiy kabinet esa faqat Mini App da yashaydi. OIDC orqali kirish
+ikkinchi bosqich nomzodi boʻlib qoladi.
 
 Administrator roli — `User` dagi maydon. Birlamchi adminlar `TELEGRAM_ADMIN_IDS` muhit oʻzgaruvchisi bilan beriladi (bootstrap), keyingilari admin panel orqali beriladi. Har bir admin harakati serverda `requireAdmin()` dan oʻtadi. Interfeysdagi admin panel tumbleri — bu faqat boshqaruv elementlarini koʻrsatish usuli; oʻzi hech qanday huquq bermaydi.
 
@@ -279,7 +291,7 @@ Tartib muhim: 0 va 1-bandlar ishlab chiqish bilan **parallel** bajariladi va ko�
 0. **Infratuzilma (egasining zimmasida).** YaTT yoki yuridik shaxs → domen → Oʻzbekistonda VPS → Docker + PostgreSQL + zaxira nusxalar.
 1. **Kontent (egasining zimmasida).** Kamida 3–5 model filtr: foto, xususiyatlar, narx, ikki tilda tavsif. Kartrijlar roʻyxati, oylardagi resursi bilan. Video sharhlar.
 2. **Riskni tekshirish.** Kinescope pleyerining prototipi haqiqiy iOS va Androiddagi Telegram WebView ichida. Barcha videolarni yuklashdan **oldin** qilinadi — agar toʻliq ekran rejimi ishlamasa, video boʻyicha reja oʻzgaradi.
-3. Skelet: Next.js + Prisma + PostgreSQL, avtorizatsiya (initData + Login Widget), i18n uz/ru.
+3. Skelet: Next.js + Prisma + PostgreSQL, avtorizatsiya (initData), i18n uz/ru.
 4. Katalog, mahsulot kartochkasi, ariza, menejerga xabar.
 5. Admin panel: mahsulotlar, blok muharriri, arizalarni qayta ishlash.
 6. CRM: mijozlar, oʻrnatishlar, kartrijlar, sanalarni belgilash.
