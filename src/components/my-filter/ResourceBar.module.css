@@ -1,0 +1,46 @@
+/* Kartrij resursi shkalasi (§3).
+   Ranglar `tokens.css` dagi `--cw-gauge-*` dan — ular aynan shu shkala uchun
+   ajratilgan va qorong'i mavzuda alohida qiymatga ega. Holat rangi mijozga
+   bir qarashda «hammasi joyida» va «muddat o'tgan» ni ajratish uchun. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-1);
+}
+
+.track {
+  position: relative;
+  height: 8px;
+  border-radius: var(--cw-radius-sm);
+  background: var(--cw-gauge-track);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--cw-radius-sm);
+  background: var(--cw-gauge-ok);
+}
+
+.label {
+  font-size: var(--cw-text-sm);
+  color: var(--cw-text-muted);
+}
+
+.wrap[data-state='SOON'] .fill {
+  background: var(--cw-gauge-soon);
+}
+
+.wrap[data-state='SOON'] .label {
+  color: var(--cw-gauge-soon);
+}
+
+.wrap[data-state='DUE'] .fill {
+  background: var(--cw-gauge-due);
+}
+
+.wrap[data-state='DUE'] .label {
+  color: var(--cw-gauge-due);
+  font-weight: 600;
+}

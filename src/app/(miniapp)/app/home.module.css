@@ -1,0 +1,41 @@
+/* Mini App bosh ekrani. */
+
+.page {
+  max-width: var(--cw-container);
+  margin: 0 auto;
+  padding: var(--cw-space-8) var(--cw-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-2);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-text-3xl);
+  letter-spacing: var(--cw-tracking-display);
+}
+
+.tagline {
+  margin: 0 0 var(--cw-space-4);
+  color: var(--cw-text-muted);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-2);
+}
+
+.link {
+  padding: var(--cw-space-4);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-lg);
+  background: var(--cw-surface);
+  color: var(--cw-text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link:hover {
+  border-color: var(--cw-accent);
+}

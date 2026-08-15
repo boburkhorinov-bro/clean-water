@@ -118,9 +118,43 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
       almashtirishga urinish rad etiladi (aks holda ikkita «amaldagi» kartrij qolardi).
 
 ### Eslatmalar va «Mening filtrim» (kritik yo'l 7)
-- [ ] Worker: har kuni 09:00 (Toshkent) — `due_at` gacha 30/7/0 kun qolgan `InstalledPart` larni tanlaydi, idempotentlik unique indeks bilan, `429` da `retry_after` ga rioya qiladi (§4.6).
-- [ ] Telegram bot: `worker` konteynerida webhook, «Заказать замену» tugmasi darhol zayavka yaratadi.
-- [ ] «Mening filtrim» ekrani: o'rnatilgan apparat, kartrijlar, real ma'lumotdan hisoblangan resurs shkalasi, almashtirishga buyurtma tugmasi.
+- [x] Worker: har kuni 09:00 (Toshkent) — `due_at` gacha 30/7/0 kun qolgan `InstalledPart` larni tanlaydi, idempotentlik unique indeks bilan, `429` da `retry_after` ga rioya qiladi (§4.6).
+      `worker/jobs/schedule.ts` (11 test), `services/reminders.ts` (22 test),
+      `services/reminder-sweep.ts` (17 integratsiya testi).
+      **Chegara «aynan teng» emas, «o'tilgan»**: worker bir kun ishlamay qolsa
+      (konteyner qayta yuklandi), tenglik bo'yicha qidiruv o'sha eslatmani butunlay
+      o'tkazib yuborardi.
+      **Bir vaqtda faqat ENG SHOSHILINCH turi ketadi**: uch kun qolganda «30 kun qoldi»
+      va «7 kun qoldi» ni birga yuborish spam.
+      Xabar matni HAQIQIY qolgan kunlarni aytadi, chegara raqamini emas (§3 qoidasi).
+      Nosozlikda satr `FAILED` bo'lib qoladi va **ertasi kuni qayta olinadi** — yangi satr
+      yaratilmaydi, unikal indeks ruxsat bermaydi va eslatma butunlay yo'qolardi.
+      429 da o'tish to'xtaydi va qolgani keyingi o'tishga qoladi (cheklov botga umumiy).
+      Telegram siz mijoz o'tkazib yuboriladi va satr YARATILMAYDI: u keyinchalik
+      Mini App ga kirsa, eslatma o'sha zahoti tiklanishi kerak.
+      Rejalashtiruvchi `TZ` ga bog'liq emas — Toshkent siljishi kodda.
+- [x] Telegram bot: `worker` konteynerida webhook, «Заказать замену» tugmasi darhol zayavka yaratadi.
+      `worker/bot/webhook.ts` (15 test), `services/replacement-request.ts` (9 integratsiya
+      testi), `telegram/bot-api.ts` (8 test). nginx `/telegram/webhook` → `worker:8081`.
+      **HAQIQIY SERVERDA TASDIQLANDI**: worker ko'tarilib, `callback_query` yuborildi —
+      egasi bosganda ariza bazada paydo bo'ldi (`MINIAPP/NEW`, izohda o'rnatish manzili),
+      begona odam bosganda esa yaratilmadi.
+      Xavfsizlik: `installed_part_id` `callback_data` da keladi, ya'ni uni istalgan odam
+      yasashi mumkin — egalik SERVERDA tekshiriladi. Sir sozlanmagan bo'lsa webhook
+      butunlay yopiq (401), chunki sirsiz u ochiq ariza generatori bo'lardi.
+      Takroriy bosish (eski xabardagi tugma) dublikat ariza bermaydi — 24 soatlik oyna.
+- [x] «Mening filtrim» ekrani: o'rnatilgan apparat, kartrijlar, real ma'lumotdan hisoblangan resurs shkalasi, almashtirishga buyurtma tugmasi.
+      `services/my-filter.ts` (10 birlik + 8 integratsiya testi),
+      `components/my-filter/ResourceBar.tsx` (7 test),
+      `api/my-filter/replace` (8 integratsiya testi), `(miniapp)/app/mening-filtrim`.
+      **Shkala dekorativ emas**: kengligi `installed_at` va `due_at` orasidagi haqiqiy
+      nisbatdan. Shuning uchun u `role="progressbar"` bilan e'lon qilinadi va ekran
+      o'quvchisiga aynan o'sha son beriladi.
+      Muddat o'tgan bo'lsa shkala 100% da to'xtaydi, kunlar esa manfiy ko'rsatiladi.
+      Buzuq ma'lumotda (`due_at` = `installed_at`) nolga bo'linmaydi.
+      Almashtirilgan kartrijlar ekranda yo'q — u «hozir nima turibdi» ga javob beradi.
+      Buyurtma tugmasi faqat muddat yaqinlashganda (`SOON`/`DUE`): doim ko'rsatilsa,
+      u yangi kartrijni ham almashtirishga undardi.
 
 ### UI va dizayn (kritik yo'l 8)
 - [x] Dizayn-tokenlar: Montserrat, och ko'k + binafsha palitra, yorug'/qorong'i tema (Mini App da tema Telegram dan olinadi, qo'lda almashtiriladi).

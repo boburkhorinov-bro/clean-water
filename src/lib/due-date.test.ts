@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { addMonthsTashkent, computeDueAt } from './due-date';
+import { addMonthsTashkent, computeDueAt, formatTashkentDate, tashkentDayDiff } from './due-date';
 
 /**
  * §5: «`due_at` buyurtma sanasidan emas, aniq kartrijning `installed_at` +
@@ -127,5 +127,56 @@ describe('computeDueAt', () => {
 
   test('yaroqsiz sana rad etiladi', () => {
     expect(() => computeDueAt(new Date('shunday sana yo‘q'), 6)).toThrow();
+  });
+});
+
+describe('tashkentDayDiff', () => {
+  test('bir kun ichidagi turli soatlar — nol kun', () => {
+    expect(tashkentDayDiff(tashkent('2026-08-15T00:30:00'), tashkent('2026-08-15T23:30:00'))).toBe(
+      0,
+    );
+  });
+
+  test('ertangi kun — bir kun', () => {
+    expect(tashkentDayDiff(tashkent('2026-08-15T23:00:00'), tashkent('2026-08-16T01:00:00'))).toBe(
+      1,
+    );
+  });
+
+  test('o‘tgan kun — manfiy', () => {
+    expect(tashkentDayDiff(tashkent('2026-08-15T10:00:00'), tashkent('2026-08-10T10:00:00'))).toBe(
+      -5,
+    );
+  });
+
+  test('30 kun', () => {
+    expect(tashkentDayDiff(tashkent('2026-08-15T10:00:00'), tashkent('2026-09-14T10:00:00'))).toBe(
+      30,
+    );
+  });
+
+  test('TOSHKENT KALENDARI: UTC da ikki xil kun bo‘lsa ham bir kun deb sanaydi', () => {
+    // Ikkalasi ham 31-mart (Toshkent), lekin UTC da 30 va 31-mart.
+    const from = tashkent('2026-03-31T00:00:00');
+    const to = tashkent('2026-03-31T23:00:00');
+    expect(from.toISOString()).toBe('2026-03-30T19:00:00.000Z');
+    expect(to.toISOString()).toBe('2026-03-31T18:00:00.000Z');
+
+    expect(tashkentDayDiff(from, to)).toBe(0);
+  });
+});
+
+describe('formatTashkentDate', () => {
+  test('kun.oy.yil ko‘rinishida', () => {
+    expect(formatTashkentDate(tashkent('2027-02-15T10:00:00'))).toBe('15.02.2027');
+  });
+
+  test('bir xonali kun va oy nol bilan to‘ldiriladi', () => {
+    expect(formatTashkentDate(tashkent('2027-01-05T10:00:00'))).toBe('05.01.2027');
+  });
+
+  test('TOSHKENT SANASI ko‘rsatiladi, UTC niki emas', () => {
+    // UTC da 15-fevral 20:00, Toshkentda esa allaqachon 16-fevral.
+    expect(formatTashkentDate(new Date('2027-02-15T20:00:00Z'))).toBe('16.02.2027');
   });
 });

@@ -14,6 +14,17 @@
 /** O'zbekiston — UTC+5, yil davomida o'zgarmaydi. */
 const TASHKENT_OFFSET_MS = 5 * 60 * 60 * 1000;
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Instantni Toshkent kalendaridagi yarim tunga qisqartiradi. */
+function tashkentMidnight(instant: Date): number {
+  const time = instant.getTime();
+  if (Number.isNaN(time)) {
+    throw new RangeError('Yaroqsiz sana');
+  }
+  return Math.floor((time + TASHKENT_OFFSET_MS) / DAY_MS) * DAY_MS;
+}
+
 function daysInMonth(year: number, monthIndex: number): number {
   // Keyingi oyning «0-kuni» — joriy oyning oxirgi kuni.
   return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
@@ -69,4 +80,29 @@ export function computeDueAt(installedAt: Date, resourceMonths: number): Date {
   }
 
   return addMonthsTashkent(installedAt, resourceMonths);
+}
+
+/**
+ * Ikki instant orasidagi KALENDAR kunlari farqi (Toshkent bo'yicha).
+ *
+ * Eslatma qarori shu son bilan qabul qilinadi (§4.6). Soatlar farqi emas,
+ * aynan kalendar kunlari: mijoz uchun «7 kun qoldi» — bu 168 soat emas,
+ * balki kalendarda yetti kun.
+ */
+export function tashkentDayDiff(from: Date, to: Date): number {
+  return Math.round((tashkentMidnight(to) - tashkentMidnight(from)) / DAY_MS);
+}
+
+/**
+ * Toshkent sanasi `KK.OO.YYYY` ko'rinishida.
+ *
+ * `Intl` ishlatilmaydi: Docker obrazida to'liq ICU bo'lishiga tayanmaslik
+ * kerak, o'zgarmas siljish bilan hisob esa aniq va tekshirilgan.
+ */
+export function formatTashkentDate(instant: Date): string {
+  const local = new Date(tashkentMidnight(instant));
+  const day = String(local.getUTCDate()).padStart(2, '0');
+  const month = String(local.getUTCMonth() + 1).padStart(2, '0');
+
+  return `${day}.${month}.${local.getUTCFullYear()}`;
 }

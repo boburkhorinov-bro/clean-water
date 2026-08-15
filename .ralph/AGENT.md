@@ -97,6 +97,21 @@ Ulanish satri (`env.example` dagi bilan bir xil):
 Parol `cleanwater` — faqat lokal ishlab chiqish uchun, 127.0.0.1 ga bog'langan.
 Prodda `docker-compose.yml` dagi `postgres` xizmati ishlatiladi.
 
+## `next build` dan keyin `next dev` — `.next` ni tozalang
+
+`npm run build` dan keyin `npm run dev` ishga tushirilsa, **hamma marshrut 404
+qaytaradi** (`/uz`, `/app`, `/admin` — hammasi). Sabab: `.next` ildizida
+production artefaktlari (`BUILD_ID`, `standalone/`, `app-paths-manifest.json`)
+qoladi va ular `next dev` ning `.next/dev` daryosi bilan aralashadi. Log da
+xato ko'rinmaydi — sahifa oddiygina «topilmadi» bo'ladi, shuning uchun buni
+o'z koding buzgan deb o'ylash oson.
+
+Yechim — dev dan oldin keshni tozalash:
+
+```bash
+git clean -xfdq .next
+```
+
 ## ⚠️ Muhit cheklovi: xotira
 
 Bu mashinada **3.8 GB RAM, odatda ~0.3–0.5 GB bo'sh**. Eng katta iste'molchilar —

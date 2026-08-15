@@ -1,0 +1,111 @@
+/* «Mening filtrim» — Mini App ekrani (§2, §3). */
+
+.page {
+  max-width: var(--cw-container);
+  margin: 0 auto;
+  padding: var(--cw-space-6) var(--cw-space-4) var(--cw-space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-6);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-1);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-text-2xl);
+  letter-spacing: var(--cw-tracking-display);
+}
+
+.lead,
+.hint {
+  margin: 0;
+  color: var(--cw-text-muted);
+  font-size: var(--cw-text-sm);
+}
+
+.empty {
+  padding: var(--cw-space-6);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-lg);
+  background: var(--cw-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-2);
+}
+
+.installations,
+.parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+}
+
+.installation {
+  padding: var(--cw-space-4);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-lg);
+  background: var(--cw-surface);
+  box-shadow: var(--cw-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-3);
+}
+
+.filterName {
+  margin: 0;
+  font-size: var(--cw-text-lg);
+}
+
+.meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-1) var(--cw-space-4);
+  font-size: var(--cw-text-sm);
+}
+
+.metaRow {
+  display: flex;
+  gap: var(--cw-space-1);
+}
+
+.metaRow dt {
+  color: var(--cw-text-muted);
+}
+
+.metaRow dd {
+  margin: 0;
+}
+
+.part {
+  padding: var(--cw-space-3);
+  border-radius: var(--cw-radius);
+  background: var(--cw-surface-raised);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-2);
+}
+
+.partHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--cw-space-2);
+}
+
+.partName {
+  font-weight: 600;
+}
+
+.partDue {
+  color: var(--cw-text-muted);
+  font-size: var(--cw-text-sm);
+}

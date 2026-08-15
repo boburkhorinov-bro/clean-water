@@ -61,13 +61,23 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_MANAGER_CHAT_ID: ${TELEGRAM_MANAGER_CHAT_ID}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
+      WORKER_PORT: ${WORKER_PORT:-8081}
       TZ: ${TZ:-Asia/Tashkent}
+    # Telegram webhooki nginx orqali keladi; tashqariga chiqarilmaydi.
+    expose:
+      - '8081'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8081/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   nginx:
     image: nginx:1.29-alpine
     restart: unless-stopped
     depends_on:
       - web
+      - worker
     ports:
       - '80:80'
       - '443:443'

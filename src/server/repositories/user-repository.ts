@@ -2,6 +2,17 @@ import type { Locale as PrismaLocale, User } from '@/generated/prisma/client';
 import { prisma } from '@/server/db';
 import { resolveRole } from '@/server/services/resolve-role';
 
+/**
+ * Mini App interfeysi tili (§4.7).
+ *
+ * Foydalanuvchi profilda tanlagan til shu yerda saqlanadi; u yo'q bo'lsa
+ * o'zbekchaga tushamiz — bo'sh ekran ko'rsatmaymiz.
+ */
+export async function findUserLocale(userId: string): Promise<'uz' | 'ru'> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { lang: true } });
+  return user?.lang === 'RU' ? 'ru' : 'uz';
+}
+
 export interface TelegramUserInput {
   telegramId: bigint;
   firstName: string | undefined;

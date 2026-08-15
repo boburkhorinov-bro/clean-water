@@ -1,5 +1,6 @@
 import type { Lead } from '@/generated/prisma/client';
 import { prisma } from '@/server/db';
+import { escapeHtml } from './html';
 
 /**
  * Menejerlar guruhiga ariza haqida xabar (§4.5).
@@ -11,11 +12,6 @@ import { prisma } from '@/server/db';
  */
 
 const TELEGRAM_API = 'https://api.telegram.org';
-
-/** Telegram HTML rejimi uchun zarur minimal ekranlash. */
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
 
 export interface LeadMessageInput {
   phone: string;

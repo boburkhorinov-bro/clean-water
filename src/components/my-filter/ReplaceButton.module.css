@@ -1,0 +1,36 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-2);
+}
+
+.button {
+  align-self: flex-start;
+  padding: var(--cw-space-2) var(--cw-space-4);
+  border: 0;
+  border-radius: var(--cw-radius);
+  background: var(--cw-accent);
+  color: var(--cw-accent-contrast);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--cw-accent-hover);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.message {
+  margin: 0;
+  font-size: var(--cw-text-sm);
+  color: var(--cw-text-muted);
+}
+
+.message[data-state='error'] {
+  color: var(--cw-danger);
+}
