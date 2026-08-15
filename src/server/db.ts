@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@/generated/prisma/client';
+import { resolvePoolMax } from './db-pool';
 
 /**
  * Prisma 7: ulanish satri ilova kodida, driver adapter orqali beriladi.
@@ -21,18 +22,36 @@ function createPrismaClient(): PrismaClient {
     throw new Error('DATABASE_URL o‘rnatilmagan. env.example dan .env yarating.');
   }
 
-  const adapter = new PrismaPg({ connectionString });
+  // Hovuz o'lchami bazadagi `max_connections` ga bog'liq va deployda
+  // sozlanadi — tafsilotlar `db-pool.ts` da.
+  const adapter = new PrismaPg({
+    connectionString,
+    max: resolvePoolMax(process.env.DATABASE_POOL_MAX),
+  });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 }
 
+/**
+ * Modul darajasidagi kesh — barcha rejimlar uchun.
+ *
+ * Avval klient faqat dev da (global orqali) saqlanardi, prodda esa HAR
+ * murojaatda yangidan qurilardi. Har bir klient o'z ulanishlar hovuzini
+ * ochadi, ya'ni bir necha parallel so'rov PostgreSQL ning `max_connections`
+ * limitini yeb qo'yardi va sahifalar 500 qaytarardi. Buni yuklama
+ * tekshiruvi ochdi (§7).
+ */
+let client: PrismaClient | undefined;
+
 function getClient(): PrismaClient {
-  const existing = globalForPrisma.prisma;
+  // Dev da global kesh HMR uchun kerak: modul qayta yuklanganda modul
+  // darajasidagi o'zgaruvchi yo'qoladi, `globalThis` esa qoladi.
+  const existing = globalForPrisma.prisma ?? client;
   if (existing) return existing;
 
-  const client = createPrismaClient();
+  client = createPrismaClient();
   if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = client;
   return client;
 }

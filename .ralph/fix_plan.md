@@ -303,7 +303,41 @@ dagi menyu va sahifa matnlarida — o'zgartiriladi.
       **Lokal eslatma:** `verify-restore.sh` CREATEDB huquqini talab qiladi.
       Docker da `POSTGRES_USER` superuser, lokal Windows bazasida esa huquq
       qo'lda berilgan (`ALTER ROLE cleanwater CREATEDB`).
-- [ ] Yuklama tekshiruvi va relizga tayyorlik.
+- [x] Yuklama tekshiruvi va relizga tayyorlik.
+      `scripts/loadtest.mjs` (9 birlik testi), `scripts/smoke.sh`,
+      `docs/DEPLOY.md`, `server/db-pool.ts` (5 test).
+      **YUKLAMA TEKSHIRUVI HAQIQIY BUG NI OCHDI.** `src/server/db.ts` prod
+      rejimida Prisma klientini keshlamas edi (global kesh faqat dev uchun
+      yozilgan), ya'ni HAR bir `prisma.*` murojaati yangi klient va yangi
+      ulanishlar hovuzini ochardi. Bir necha parallel so'rov PostgreSQL ning
+      `max_connections` ini yeb qo'ydi va mahsulot sahifasi 100% 500
+      qaytardi. Birlik testlarida ko'rinmasdi (ular dev rejimida ishlaydi),
+      integratsiya testlarida ham (bitta so'rov ketma-ket). Tuzatildi:
+      klient modul darajasida keshlanadi, dev da qo'shimcha global kesh —
+      HMR modul darajasidagi o'zgaruvchini yo'qotadi.
+      Test yozilganda u DASTLAB YOLG'ON YASHIL bo'ldi: `vi.resetModules()`
+      `globalThis` ni tozalamaydi va oldingi testdagi klient o'tib ketardi.
+      Ulanishlar hovuzi endi `DATABASE_POOL_MAX` bilan sozlanadi.
+      **`next start` standalone build bilan ISHLAMAYDI** (u ogohlantirish
+      beradi va boshqa artefaktni ishlatadi). To'g'ri kirish nuqtasi —
+      `node .next/standalone/server.js`; Dockerfile allaqachon shunday
+      qiladi, lekin lokal tekshiruvda buni bilish kerak.
+      O'lchovlar (bu mashinada, mijoz va server bir joyda — server
+      imkoniyatining yuqori chegarasi emas): `/uz` 66 RPS / p95 253 ms,
+      `/uz/filtrlar` 70 RPS / p95 239 ms, mahsulot sahifasi (dinamik,
+      bazaga boradi) 11.5 RPS / p95 634 ms, `/api/health` 144 RPS.
+      Dinamik sahifa besh baravar sekin — yuklama kutilsa uni ham ISR ga
+      o'tkazish kerak (DEPLOY.md §9 da qayd etilgan).
+      Rate-limit yuklama ostida tasdiqlandi: 13 arizadan 10 tasi 201,
+      qolgani 429.
+      `smoke.sh` deploydan keyin 15 ta tekshiruvni bajaradi va HAQIQIY
+      serverda o'tkazildi. U bitta noaniqlikni ham hujjatlashtirdi: admin
+      API 401 emas, **404** qaytaradi (`requireAdminOrNotFound` — API
+      mavjudligini oshkor qilmaslik uchun).
+
+**Kritik yo'l tugadi.** Deploy tartibi, zaxira, tiklash, monitoring va
+relizga tayyorlik cheklisti — `docs/DEPLOY.md` da. Qolgan ish loyiha
+egasida (pastdagi «Optional»).
 
 ## Optional
 

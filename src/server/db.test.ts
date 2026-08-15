@@ -13,11 +13,18 @@ describe('prisma klienti', () => {
 
   beforeEach(() => {
     vi.resetModules();
+    // `vi.resetModules()` modulni qayta yuklaydi, lekin `globalThis` ni
+    // tozalamaydi: oldingi testda saqlangan klient keyingisiga o'tib
+    // ketardi va test tekshirmoqchi bo'lgan xatti-harakatni yashirardi.
+    delete (globalThis as { prisma?: unknown }).prisma;
   });
 
   afterEach(() => {
     if (original === undefined) delete process.env.DATABASE_URL;
     else process.env.DATABASE_URL = original;
+    // `NODE_ENV` tip e'lonida faqat o'qish uchun — vitest o'z API si bilan
+    // uni vaqtincha almashtiradi.
+    vi.unstubAllEnvs();
   });
 
   test('DATABASE_URL yo‘q bo‘lsa ham modul import qilinadi', async () => {
@@ -39,5 +46,27 @@ describe('prisma klienti', () => {
 
     // Ulanish ochilmaydi — faqat klient qurilganini tekshiramiz.
     expect(prisma.user).toBeDefined();
+  });
+
+  test('prod rejimida klient qayta ishlatiladi', async () => {
+    // Yuklama tekshiruvida topildi: prodda har murojaatda YANGI klient
+    // qurilardi va har biri o'z ulanishlar hovuzini ochardi. Natijada
+    // bir necha parallel so'rov PostgreSQL ning `max_connections` ini
+    // yeb qo'yib, sahifalar 500 qaytardi.
+    process.env.DATABASE_URL = 'postgresql://u:p@localhost:5432/db';
+    vi.stubEnv('NODE_ENV', 'production');
+    const { prisma } = await import('./db');
+
+    expect(prisma.user).toBe(prisma.user);
+  });
+
+  test('dev rejimida ham klient qayta ishlatiladi', async () => {
+    // Dev da global kesh HMR uchun kerak: har hot-reload da yangi hovuz
+    // ochilsa, bir necha tahrirdan keyin baza ulanishlarini tugatardi.
+    process.env.DATABASE_URL = 'postgresql://u:p@localhost:5432/db';
+    vi.stubEnv('NODE_ENV', 'development');
+    const { prisma } = await import('./db');
+
+    expect(prisma.product).toBe(prisma.product);
   });
 });

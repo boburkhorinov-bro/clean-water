@@ -41,6 +41,9 @@ services:
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
       TELEGRAM_ADMIN_IDS: ${TELEGRAM_ADMIN_IDS}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      # Ulanishlar hovuzi bazadagi `max_connections` ga bog'liq —
+      # docs/DEPLOY.md §7.
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
       TZ: ${TZ:-Asia/Tashkent}
     expose:
       - '3000'
@@ -64,6 +67,7 @@ services:
       TELEGRAM_MANAGER_CHAT_ID: ${TELEGRAM_MANAGER_CHAT_ID}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
       WORKER_PORT: ${WORKER_PORT:-8081}
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
       TZ: ${TZ:-Asia/Tashkent}
     # Telegram webhooki nginx orqali keladi; tashqariga chiqarilmaydi.
     expose:
