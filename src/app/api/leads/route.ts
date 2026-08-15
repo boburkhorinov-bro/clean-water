@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/server/auth/require-admin';
+import { verifyFormToken } from '@/server/form-token';
 import { createRateLimiter } from '@/server/rate-limit';
 import { LeadValidationError, createLead } from '@/server/services/leads';
 import { notifyManagers } from '@/server/telegram/notify-manager';
@@ -8,9 +9,9 @@ import { notifyManagers } from '@/server/telegram/notify-manager';
 /**
  * Ariza qabul qilish (§4.5).
  *
- * Muhim tartib: validatsiya → rate-limit → baza → javob → xabarnoma.
- * Xabarnoma `createLead` ichida yuboriladi va uning nosozligi javobga
- * ta'sir qilmaydi.
+ * Muhim tartib: validatsiya → spam to'siqlari → rate-limit → baza → javob
+ * → xabarnoma. Xabarnoma `createLead` ichida yuboriladi va uning nosozligi
+ * javobga ta'sir qilmaydi.
  */
 
 const bodySchema = z.object({
@@ -19,6 +20,14 @@ const bodySchema = z.object({
   productId: z.uuid().optional(),
   comment: z.string().trim().max(1000).optional(),
   source: z.enum(['MINIAPP', 'WEB']),
+  /** `GET /api/form-token` bergan imzolangan boshlanish payti (§6). */
+  formToken: z.string().max(200).optional(),
+  /**
+   * Honeypot: forma ichida yashiringan maydon. Odam uni ko'rmaydi, ko'pchilik
+   * bot esa barcha maydonlarni to'ldiradi. Nomi ataylab jozibali —
+   * `website`.
+   */
+  website: z.string().max(500).optional(),
 });
 
 /**
@@ -48,6 +57,23 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  }
+
+  // ── Spam to'siqlari (§6) ───────────────────────────────────────────────
+  // Rad etish sababi mijozga aytilmaydi: bot qaysi to'siqqa urilganini
+  // bilsa, keyingi urinishda uni chetlab o'tardi.
+  if (parsed.data.website?.trim()) {
+    console.warn('[api/leads] honeypot to‘ldirilgan, ariza rad etildi');
+    return NextResponse.json({ error: 'invalid_lead' }, { status: 400 });
+  }
+
+  // Token muammosini esa mijozning o'zi hal qila oladi (sahifani yangilash),
+  // shuning uchun u alohida kod bilan qaytadi va klient yangi token olib
+  // qayta yuboradi.
+  const formTokenCheck = verifyFormToken(parsed.data.formToken, process.env.JWT_SECRET ?? '');
+  if (!formTokenCheck.ok) {
+    console.warn(`[api/leads] forma tokeni rad etildi: ${formTokenCheck.reason}`);
+    return NextResponse.json({ error: 'stale_form' }, { status: 400 });
   }
 
   // Sessiya bo'lsa — mijozni Telegram bo'yicha ham bog'laymiz (§4.5 dagi

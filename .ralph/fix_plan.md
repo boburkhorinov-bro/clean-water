@@ -244,7 +244,39 @@ dagi menyu va sahifa matnlarida — o'zgartiriladi.
       tekshirish kerak.
 
 ### Ishga tushirishdan oldin (kritik yo'l 9)
-- [ ] Xavfsizlik: CSP sarlavhalari, HTTPS majburiy, sirlar faqat env da, formalarga rate-limit, spam himoyasi (§7).
+- [x] Xavfsizlik: CSP sarlavhalari, HTTPS majburiy, sirlar faqat env da, formalarga rate-limit, spam himoyasi (§7).
+      `lib/security-headers.ts` (15 test) + `next.config.ts`, `server/env.ts` (17 test),
+      `server/form-token.ts` (14 test), `api/form-token` (3 test), `instrumentation.ts` (3 test),
+      `LeadForm` honeypot (8 test), `api/leads` spam to'siqlari (+7 integratsiya testi),
+      nginx konfiguratsiyasi (11 test).
+      **CSP endi ILOVADA, nginx unda emas.** Avval u faqat nginx da edi va
+      `npm start` bilan ishga tushirilgan ilova butunlay himoyasiz qolardi.
+      nginx darajasida sarlavhalar TAKRORLANMAYDI: ikkita farqli CSP brauzerda
+      kesishadi va nginx dagi eskirgan siyosat ilovaning yangi ruxsatlarini
+      jimgina bloklardi. Yagona istisno — `/media/`, u ilovadan o'tmaydi va
+      o'zining eng qattiq siyosatini oladi (`default-src 'none'; sandbox`).
+      **`X-Frame-Options` OLIB TASHLANDI**: `SAMEORIGIN` Telegram Web dagi
+      Mini App ni bloklardi. Ramkalar faqat CSP `frame-ancestors` bilan.
+      `img-src` `https:` dan `'self' data:` ga toraytirildi — kontent-bloklar
+      sxemasi tashqi rasmga baribir yo'l qo'ymaydi.
+      HTTPS: `tls.conf.disabled` (80 → 301, HSTS, TLSv1.2+), location lar
+      `app_locations.inc` da — ikkala server bloki uchun bitta nusxa.
+      Env: prodda sir bo'sh yoki namuna qiymati bo'lsa **ilova ko'tarilmaydi**
+      (`web` uchun `instrumentation.ts`, `worker` uchun `main()`). Dev da
+      ogohlantirish. Xato xabarida sir qiymati ko'rinmaydi — u log ga tushadi.
+      **Spam: CAPTCHA emas, honeypot + imzolangan forma tokeni.** CAPTCHA har
+      bir haqiqiy mijozga soliq soladi. Token `GET /api/form-token` dan olinadi
+      (sahifaga qo'yib bo'lmasdi — ISR uni HTML ga muzlatib qo'yardi) va
+      to'ldirishga sarflangan vaqtni o'lchaydi: 3 soniyadan tez yuborilgan
+      forma rad etiladi. Vaqt HMAC bilan imzolangan, ya'ni klient uni
+      soxtalashtira olmaydi.
+      Honeypot rad etilishi oddiy validatsiya xatosidan **farq qilmaydi**
+      (`invalid_lead`) — bot to'siqni payqamasligi kerak. Token muammosi esa
+      alohida kod (`stale_form`), chunki uni mijozning o'zi hal qiladi.
+      **ISHLAYOTGAN SERVERDA TASDIQLANDI**: `/uz` javobida to'liq CSP
+      (dev da `'unsafe-eval'` bilan, HSTS siz), 144 ms yoshdagi token 400
+      bilan rad etildi, 4.5 s dan keyin o'sha oqim 201 berdi, honeypot bilan
+      400, token javobida `Cache-Control: no-store`.
 - [ ] `pg_dump` cron bo'yicha avtomatik zaxira + tiklashni tekshirish (§7).
 - [ ] Yuklama tekshiruvi va relizga tayyorlik.
 

@@ -1,0 +1,51 @@
+# Clean Water — nginx, TLS bosqichi (§6: «HTTPS majburiy»).
+#
+# Bu fayl ataylab `.conf` bilan tugamaydi — nginx `conf.d/*.conf` ni yuklaydi,
+# ya'ni sertifikat yo'q paytda u chetlab o'tiladi. Sertifikat olingandan keyin
+# yoqiladi (`docs/DEPLOY.md`):
+#
+#     mv default.conf default.conf.disabled
+#     mv tls.conf.disabled tls.conf
+#     docker compose exec nginx nginx -t && docker compose exec nginx nginx -s reload
+#
+# `example.uz` ni haqiqiy domenga almashtiring (uch joyda: server_name va
+# ikkita sertifikat yo'li).
+
+server {
+    listen 80;
+    server_name example.uz www.example.uz;
+
+    # Sertifikatni yangilash HTTP orqali boradi — bu yo'l redirectdan
+    # mustasno bo'lishi shart, aks holda certbot 90 kundan keyin yiqiladi
+    # va sayt sertifikatsiz qoladi.
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        access_log off;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name example.uz www.example.uz;
+
+    client_max_body_size 10m;
+
+    ssl_certificate     /etc/letsencrypt/live/example.uz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.uz/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # HSTS ni ilova ham beradi; bu yerda u nginx o'zi javob beradigan yo'llar
+    # uchun ham (masalan `/media/`) takrorlanadi. Qiymat bir xil bo'lishi shart —
+    # `src/lib/security-headers.ts` ga qarang.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    include /etc/nginx/conf.d/app_locations.inc;
+}

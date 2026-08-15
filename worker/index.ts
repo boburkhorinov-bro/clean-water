@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { checkProcessEnv } from '@/server/env';
 import { runReminderSweep } from '@/server/services/reminder-sweep';
 import { requestReplacement } from '@/server/services/replacement-request';
 import {
@@ -100,6 +101,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 }
 
 function main(): void {
+  // Sozlama tekshiruvi eng boshida: sirsiz worker jim ishlab turadi
+  // (webhook hamma so'rovni 401 qiladi, eslatmalar hech kimga ketmaydi) —
+  // bu eng yomon nosozlik turi, chunki u sog'lom ko'rinadi.
+  checkProcessEnv('worker');
+
   const port = Number(process.env.WORKER_PORT ?? DEFAULT_PORT);
 
   const job = startDailyJob({ hour: REMINDER_HOUR, run: sweep });

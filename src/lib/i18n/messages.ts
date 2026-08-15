@@ -44,6 +44,7 @@ const uz = {
   formErrorPhone: 'Telefon raqamini tekshiring. Namuna: +998 90 123 45 67',
   formErrorRate: 'Juda ko‘p urinish. Biroz kutib, qayta yuboring.',
   formErrorGeneric: 'Ariza yuborilmadi. Birozdan so‘ng qayta urinib ko‘ring.',
+  formErrorStale: 'Forma eskirdi. Sahifani yangilab, qaytadan yuboring.',
 
   heroTitle: 'CLEAN WATER ga xush kelibsiz',
   heroLead: 'Bu siz va oilangiz salomatligi uchun xizmat qiladigan platforma.',
@@ -126,6 +127,7 @@ const ru: Messages = {
   formErrorPhone: 'Проверьте номер телефона. Пример: +998 90 123 45 67',
   formErrorRate: 'Слишком много попыток. Подождите и отправьте снова.',
   formErrorGeneric: 'Заявка не отправлена. Попробуйте чуть позже.',
+  formErrorStale: 'Форма устарела. Обновите страницу и отправьте снова.',
 
   heroTitle: 'Добро пожаловать в CLEAN WATER',
   heroLead: 'Платформа для здоровья вас и вашей семьи.',
