@@ -3,6 +3,8 @@
 # Ishga tushirish:
 #   cp env.example .env    # va qiymatlarni to'ldiring
 #   docker compose up --build
+#
+# To'liq deploy tartibi (TLS, webhook, zaxira) — docs/DEPLOY.md.
 
 services:
   postgres:
@@ -72,6 +74,31 @@ services:
       timeout: 5s
       retries: 3
 
+  # ── Zaxira (§7) ────────────────────────────────────────────────────────────
+  # Har kuni `BACKUP_HOUR` da `pg_dump` va darhol tiklab ko'rish. Alohida
+  # konteyner, chunki `pg_dump` versiyasi server versiyasiga mos bo'lishi
+  # kerak — shuning uchun bu ayni `postgres` image i.
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      BACKUP_DIR: /backups
+      BACKUP_HOUR: ${BACKUP_HOUR:-03}
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - ./scripts:/scripts:ro
+      # Zaxiralar hostda turadi: konteyner volumeidan ko'ra ularni tashqi
+      # diskka olib chiqish oson bo'lsin.
+      - ./backups:/backups
+    # `postgres` image ining standart entrypointi serverni ko'taradi —
+    # uni butunlay almashtiramiz.
+    entrypoint: ['/bin/sh', '/scripts/backup-loop.sh']
+
   nginx:
     image: nginx:1.29-alpine
     restart: unless-stopped
@@ -85,9 +112,12 @@ services:
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
       # Yuklangan media — nginx to'g'ridan-to'g'ri uzatadi (§4.1).
       - media:/var/app/media:ro
-      # TLS sertifikatlari (Let's Encrypt) — hosting sozlangach ulanadi.
-      # - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Let's Encrypt: HTTP tekshiruvi shu papkadan o'qiladi (docs/DEPLOY.md).
+      - certbot-webroot:/var/www/certbot
+      # TLS sertifikatlari — `tls.conf` yoqilgandan keyin kerak bo'ladi.
+      - /etc/letsencrypt:/etc/letsencrypt:ro
 
 volumes:
   postgres-data:
   media:
+  certbot-webroot:

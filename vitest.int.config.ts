@@ -14,7 +14,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/**/*.int.test.ts', 'worker/**/*.int.test.ts'],
+    include: ['src/**/*.int.test.ts', 'worker/**/*.int.test.ts', 'scripts/**/*.int.test.ts'],
     exclude: ['node_modules/**', '.next/**', 'src/generated/**'],
     pool: 'forks',
     // Bitta baza — testlar bir-birining ma'lumotini o'chirib yubormasligi uchun

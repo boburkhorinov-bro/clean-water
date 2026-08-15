@@ -277,7 +277,32 @@ dagi menyu va sahifa matnlarida — o'zgartiriladi.
       (dev da `'unsafe-eval'` bilan, HSTS siz), 144 ms yoshdagi token 400
       bilan rad etildi, 4.5 s dan keyin o'sha oqim 201 berdi, honeypot bilan
       400, token javobida `Cache-Control: no-store`.
-- [ ] `pg_dump` cron bo'yicha avtomatik zaxira + tiklashni tekshirish (§7).
+- [x] `pg_dump` cron bo'yicha avtomatik zaxira + tiklashni tekshirish (§7).
+      `scripts/backup.sh`, `restore.sh`, `verify-restore.sh`, `backup-loop.sh`
+      (19 integratsiya testi) + `docker-compose.yml` dagi `backup` xizmati.
+      **HAQIQIY BAZADA TIKLAB KO'RILDI**: seed qilingan mahsulot dump ga tushdi,
+      baza `TRUNCATE` bilan tozalandi, `restore.sh` uni qaytardi. Alohida test
+      falokat ssenariysini bajaradi — testlar `pg_dump`/`pg_restore` ni haqiqatan
+      chaqiradi, mock yo'q.
+      **cron ATAYLAB ISHLATILMADI.** busybox `crond` bola jarayonga konteyner
+      muhitini to'liq bermaydi va `DATABASE_URL` yo'qolib qolardi — buni faqat
+      birinchi tiklash kerak bo'lgan kuni bilib olardik. O'rniga oddiy tsikl:
+      muhit o'zgarmaydi, xatti-harakat sinovdan o'tadi (`BACKUP_ONCE=1`).
+      **Har kunlik zaxiradan keyin tiklash AVTOMATIK tekshiriladi**: dump
+      vaqtinchalik bazaga tiklanadi, jadvallar sanaladi, baza o'chiriladi.
+      Qo'lda bajariladigan qadam birinchi band haftada unutilardi.
+      Tekshiruv `pg_stat_user_tables` ga tayanmaydi — u tiklashdan keyin nol
+      ko'rsatishi mumkin va bo'sh zaxira «sog'lom» deb o'tib ketardi; har bir
+      jadval haqiqatan `count(*)` bilan sanaladi.
+      Dump avval `.partial` nomiga yoziladi: yarim yozilgan fayl zaxira
+      ro'yxatida turib, yolg'on ishonch berardi.
+      `restore.sh` `--yes` siz ishlamaydi — tasodifiy chaqiruv ishlab chiqish
+      bazasini yo'q qilardi.
+      Skriptlar POSIX `sh` da (Alpine da bash yo'q) va testlar ham `sh` bilan
+      chaqiradi — moslik sinovdan o'tadi.
+      **Lokal eslatma:** `verify-restore.sh` CREATEDB huquqini talab qiladi.
+      Docker da `POSTGRES_USER` superuser, lokal Windows bazasida esa huquq
+      qo'lda berilgan (`ALTER ROLE cleanwater CREATEDB`).
 - [ ] Yuklama tekshiruvi va relizga tayyorlik.
 
 ## Optional

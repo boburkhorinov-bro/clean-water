@@ -67,3 +67,6 @@ target/
 
 # Ralph tool source checkout (installed globally, not project code)
 /ralph-claude-code/
+
+# Zaxira nusxalari (docker-compose dagi `backup` xizmati shu yerga yozadi)
+/backups/
