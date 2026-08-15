@@ -29,8 +29,9 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
       **Cookie: prodda `SameSite=None; Secure` SHART** — Mini App Telegram iframe i ichida,
       ya'ni uchinchi tomon konteksti; `Lax` da cookie umuman yuborilmaydi. Dev da `Lax`,
       chunki `None` brauzerdan `Secure` talab qiladi, lokal HTTP da esa u yo'q.
-      **TEKSHIRILMAGAN: bazaga tegadigan yo'l** (`upsertTelegramUser` va route handler
-      to'liq oqimi) — baza ko'tarilmagan.
+      **HAQIQIY BAZADA TASDIQLANDI**: `api/auth/telegram/route.int.test.ts`
+      (11 test) `upsertTelegramUser` va route handlerning to'liq oqimini
+      ko'tarilgan bazaga qarshi bajaradi.
 - [~] ~~Telegram Login Widget bilan brauzerdan kirish~~ — **MVP dan CHIQARILDI**
       (loyiha egasining qarori, 2026-08-14). MVP da saytda kirish tugmasi umuman bo'lmaydi:
       katalog hammaga ochiq, ariza telefon raqami bilan qoldiriladi (§4.4 dagi «Mehmon»
