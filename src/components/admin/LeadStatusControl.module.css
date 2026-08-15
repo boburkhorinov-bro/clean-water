@@ -1,0 +1,47 @@
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-1);
+  align-items: center;
+}
+
+.button {
+  padding: 2px var(--cw-space-2);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-sm);
+  background: var(--cw-surface);
+  color: var(--cw-text);
+  font: inherit;
+  font-size: var(--cw-text-xs);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--cw-accent);
+  color: var(--cw-accent);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.button[data-target='REJECTED']:hover:not(:disabled) {
+  border-color: var(--cw-danger);
+  color: var(--cw-danger);
+}
+
+.button[data-target='DONE']:hover:not(:disabled) {
+  border-color: var(--cw-success);
+  color: var(--cw-success);
+}
+
+.done {
+  color: var(--cw-text-muted);
+}
+
+.error {
+  color: var(--cw-danger);
+  font-size: var(--cw-text-xs);
+}

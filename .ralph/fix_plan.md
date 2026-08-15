@@ -81,10 +81,60 @@ Har bir loopda **bitta** punkt bajariladi va shu yerda `- [x]` bilan belgilanadi
       va mijozga muvaffaqiyat qaytariladi.
 
 ### Admin panel (kritik yo'l 5)
-- [ ] Adminka: mahsulotlar CRUD (filtrlar va kartrijlar, ikki tilda).
-- [ ] Kontent-bloklar vizual muharriri (ixtiyoriy HTML qabul qilinmaydi; saqlashda sanitizatsiya).
-- [ ] Zayavkalar bilan ishlash: `new → in_work → done | rejected` statuslari.
-- [ ] `AuditLog` — har bir admin harakati yoziladi (§7).
+- [x] Adminka: mahsulotlar CRUD (filtrlar va kartrijlar, ikki tilda).
+      `services/admin-products.ts` (30 integratsiya testi), `api/admin/products` (14 test),
+      `(admin)/admin/mahsulotlar` — ro'yxat, forma, tahrirlash.
+      **O'chirish YO'Q, ARXIVLASH bor** (`isActive=false`): mahsulotga `Lead` va
+      `Installation` bog'langan bo'lishi mumkin va ularning tarixi buzilmasligi kerak.
+      Admin ro'yxati katalogdan farqli — arxivlanganlarni ham ko'rsatadi, aks holda
+      ularni qaytarib bo'lmasdi.
+      **Resurssiz kartrij rad etiladi** — `due_at` usiz hisoblanmaydi va bunday kartrij
+      eslatmasiz qolib ketardi (§5). Bu CRM va eslatmalar bilan bir xil qoida.
+      Ruscha nom bo'sh qolsa o'zbekchasi yoziladi (§4.7).
+- [x] Kontent-bloklar vizual muharriri (ixtiyoriy HTML qabul qilinmaydi; saqlashda sanitizatsiya).
+      `lib/block-editor.ts` (16 birlik testi) + `components/admin/BlockEditor.tsx`.
+      Muharrirda ixtiyoriy HTML maydoni YO'Q — u faqat tiplashtirilgan bloklarni yasaydi,
+      har bir maydon o'z turiga mos kirish elementiga bog'langan.
+      **Test qoidasi**: muharrir yasagan har qanday bo'sh blok `contentBlocksSchema` dan
+      o'tishi shart (rasm `/media/`, video id harf-raqam) — aks holda admin formani
+      to'ldirib bo'lib, saqlashda tushunarsiz xatoga urilardi.
+      Validatsiya SAQLASHDA, serverda takrorlanadi: klientdagi cheklov himoya emas.
+- [x] Zayavkalar bilan ishlash: `new → in_work → done | rejected` statuslari.
+      `services/admin-leads.ts` (21 integratsiya testi), `api/admin/leads/[id]/status` (6 test),
+      `(admin)/admin/arizalar`.
+      Oqim qat'iy: `NEW → DONE` **rad etiladi** — ishga olinmagan ariza bajarilgan bo'la
+      olmaydi va statistika yolg'on bo'lardi. `DONE` yakuniy holat.
+      Orqaga qaytish cheklangan holda ruxsat: `IN_WORK → NEW`, `REJECTED → NEW` —
+      menejer tugmani xato bosishi odatiy hol.
+      Taqiqlangan o'tish HTTP da 400 emas, **409**: so'rov to'g'ri, arizaning holati
+      yo'l bermayapti — interfeys «sahifani yangilang» deydi.
+- [x] `AuditLog` — har bir admin harakati yoziladi (§7).
+      `services/audit.ts` (8 birlik testi) + `(admin)/admin/jurnal`.
+      Yozuv asosiy amal bilan **bitta tranzaksiyada**: to'liq bo'lmagan jurnal jurnal emas.
+      Qamrov: `product.create/update/archive/restore`, `lead.status`,
+      `installation.create`, `part.replace`.
+      Payload dan sirlar **kalit nomi bo'yicha** olib tashlanadi (`token`, `secret`,
+      `password`, `apiKey`…) — jurnal panelda ko'rinadi va zaxiraga tushadi.
+      Filtr oq emas, qora ro'yxat: yangi maydon jurnalga o'z-o'zidan tushadi.
+      Jurnal faqat o'qiladi — panelda tahrirlash yoki o'chirish yo'q.
+
+**CRM ekranlari shu bosqichda yopildi.** Kritik yo'l 6 da servis qatlami yozilgan edi,
+lekin menejer uchun ekran yo'q edi: `(admin)/admin/mijozlar` (ro'yxat va kartochka),
+`api/admin/installations` (6 test), `api/admin/parts/[id]/replace` (6 test),
+`InstallationForm` va `ReplacePartButton`.
+**Sanalar Toshkent kalendarida o'qiladi** (`parseTashkentDate`): menejer formaga mahalliy
+sanani yozadi va u `due_at` ga to'g'ridan-to'g'ri ta'sir qiladi. `new Date('2026-02-15')`
+uni UTC yarim tuni deb olardi va kun chegarasida muddat siljirdi.
+
+**ISHLAYOTGAN SERVERDA TASDIQLANDI**: sessiyasiz barcha admin sahifalari 404,
+admin sessiyasi bilan 200. Kartrij almashtirilgani HTTP orqali belgilandi — eski qator
+yopildi, yangisi to'g'ri `due_at` bilan yaratildi, jurnalga `part.replace` tushdi va
+kartochkada «183 kun qoldi» ko'rindi.
+
+**RECOMMENDATION (§9 dagi ochiq savol):** admin panel matnlari o'zbekcha, `lang="uz"`
+(avval `lang="ru"` edi). Sabab: loyihaning butun hujjatlashtiruvi va kod bazasi
+o'zbekcha. Menejerlar ruscha ishlashi ma'lum bo'lsa, bu bir joyda — `admin/layout.tsx`
+dagi menyu va sahifa matnlarida — o'zgartiriladi.
 
 ### CRM (kritik yo'l 6)
 - [x] Mijozlar bazasi, telefon bo'yicha dublikatlarni yopishtirish (bitta mijozda bir nechta `Installation` bo'lishi mumkin).

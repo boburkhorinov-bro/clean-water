@@ -67,3 +67,22 @@ export function findClientWithHistory(userId: string) {
     },
   });
 }
+
+/**
+ * Administrator harakatlari jurnali (§6).
+ *
+ * Jurnal faqat O'QILADI: unga yozish `services/audit.ts` orqali, asosiy amal
+ * bilan bitta tranzaksiyada bo'ladi.
+ */
+export function findAuditLogs(page: { limit: number; offset: number }) {
+  return prisma.auditLog.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: page.limit,
+    skip: page.offset,
+    include: { admin: { select: { name: true, telegramId: true } } },
+  });
+}
+
+export function countAuditLogs(): Promise<number> {
+  return prisma.auditLog.count();
+}

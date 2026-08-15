@@ -1,0 +1,46 @@
+.trigger,
+.confirm,
+.cancel {
+  padding: 2px var(--cw-space-2);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-sm);
+  background: var(--cw-surface);
+  color: var(--cw-text);
+  font: inherit;
+  font-size: var(--cw-text-xs);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.trigger:hover,
+.confirm:hover:not(:disabled) {
+  border-color: var(--cw-accent);
+  color: var(--cw-accent);
+}
+
+.confirm:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-1);
+  align-items: center;
+}
+
+.date {
+  padding: 2px var(--cw-space-2);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-sm);
+  background: var(--cw-bg);
+  color: var(--cw-text);
+  font: inherit;
+  font-size: var(--cw-text-xs);
+}
+
+.error {
+  color: var(--cw-danger);
+  font-size: var(--cw-text-xs);
+}

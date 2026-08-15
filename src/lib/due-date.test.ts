@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest';
-import { addMonthsTashkent, computeDueAt, formatTashkentDate, tashkentDayDiff } from './due-date';
+import {
+  addMonthsTashkent,
+  computeDueAt,
+  formatTashkentDate,
+  parseTashkentDate,
+  tashkentDayDiff,
+} from './due-date';
 
 /**
  * §5: «`due_at` buyurtma sanasidan emas, aniq kartrijning `installed_at` +
@@ -178,5 +184,27 @@ describe('formatTashkentDate', () => {
   test('TOSHKENT SANASI ko‘rsatiladi, UTC niki emas', () => {
     // UTC da 15-fevral 20:00, Toshkentda esa allaqachon 16-fevral.
     expect(formatTashkentDate(new Date('2027-02-15T20:00:00Z'))).toBe('16.02.2027');
+  });
+});
+
+describe('parseTashkentDate', () => {
+  test('`YYYY-MM-DD` Toshkent yarim tuniga aylanadi', () => {
+    expect(parseTashkentDate('2026-02-15')).toEqual(tashkent('2026-02-15T00:00:00'));
+  });
+
+  test('UTC EMAS: `2026-02-15` UTC yarim tuni bo‘lsa, Toshkentda 05:00 bo‘lardi', () => {
+    // Menejer formaga mahalliy sanani yozadi. UTC deb talqin qilinsa,
+    // muddat hisobi kun chegarasida siljirdi.
+    expect(parseTashkentDate('2026-02-15')?.toISOString()).toBe('2026-02-14T19:00:00.000Z');
+  });
+
+  test('vaqt qismi berilsa u ham Toshkent bo‘yicha o‘qiladi', () => {
+    expect(parseTashkentDate('2026-02-15T14:30')).toEqual(tashkent('2026-02-15T14:30:00'));
+  });
+
+  test('yaroqsiz sana `null`', () => {
+    for (const value of ['', 'sana emas', '2026-13-45', '15.02.2026']) {
+      expect(parseTashkentDate(value), value).toBeNull();
+    }
   });
 });

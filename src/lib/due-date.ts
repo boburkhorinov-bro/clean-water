@@ -93,6 +93,25 @@ export function tashkentDayDiff(from: Date, to: Date): number {
   return Math.round((tashkentMidnight(to) - tashkentMidnight(from)) / DAY_MS);
 }
 
+/** `YYYY-MM-DD` yoki `YYYY-MM-DDTHH:MM` — HTML `date`/`datetime-local` beradigan shakl. */
+const LOCAL_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/;
+
+/**
+ * Formadan kelgan sanani Toshkent kalendari bo'yicha o'qiydi.
+ *
+ * Menejer formaga MAHALLIY sanani yozadi. `new Date('2026-02-15')` esa uni
+ * UTC yarim tuni deb oladi va Toshkentda bu 05:00 bo'ladi — kun chegarasida
+ * o'rnatish sanasi bir kunga siljib ketardi.
+ */
+export function parseTashkentDate(value: string): Date | null {
+  if (!LOCAL_DATE_PATTERN.test(value)) return null;
+
+  const withTime = value.includes('T') ? value : `${value}T00:00:00`;
+  const parsed = new Date(`${withTime}+05:00`);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 /**
  * Toshkent sanasi `KK.OO.YYYY` ko'rinishida.
  *
