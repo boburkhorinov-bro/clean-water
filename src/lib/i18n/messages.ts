@@ -45,6 +45,16 @@ const uz = {
   formErrorRate: 'Juda ko‘p urinish. Biroz kutib, qayta yuboring.',
   formErrorGeneric: 'Ariza yuborilmadi. Birozdan so‘ng qayta urinib ko‘ring.',
 
+  heroTitle: 'CLEAN WATER ga xush kelibsiz',
+  heroLead: 'Bu siz va oilangiz salomatligi uchun xizmat qiladigan platforma.',
+  heroFilters: 'Filtrlarni ko‘rish',
+  heroCartridges: 'Kartrijlarni ko‘rish',
+  homeCatalogTitle: 'Katalogdan',
+  homeCatalogEmpty: 'Katalog hozircha to‘ldirilmoqda.',
+  homeAttention: 'Diqqat talab qiladi',
+  homeAllGood: 'Barcha kartrijlar joyida.',
+  homeOpenMyFilter: 'Mening filtrim',
+
   myFilterTitle: 'Mening filtrim',
   myFilterLead: 'O‘rnatilgan apparat va kartrijlarning haqiqiy holati.',
   myFilterEmpty: 'Sizda hali qayd etilgan o‘rnatish yo‘q.',
@@ -116,6 +126,16 @@ const ru: Messages = {
   formErrorPhone: 'Проверьте номер телефона. Пример: +998 90 123 45 67',
   formErrorRate: 'Слишком много попыток. Подождите и отправьте снова.',
   formErrorGeneric: 'Заявка не отправлена. Попробуйте чуть позже.',
+
+  heroTitle: 'Добро пожаловать в CLEAN WATER',
+  heroLead: 'Платформа для здоровья вас и вашей семьи.',
+  heroFilters: 'Смотреть фильтры',
+  heroCartridges: 'Смотреть картриджи',
+  homeCatalogTitle: 'Из каталога',
+  homeCatalogEmpty: 'Каталог пока наполняется.',
+  homeAttention: 'Требует внимания',
+  homeAllGood: 'Все картриджи в порядке.',
+  homeOpenMyFilter: 'Мой фильтр',
 
   myFilterTitle: 'Мой фильтр',
   myFilterLead: 'Реальное состояние установленного аппарата и картриджей.',

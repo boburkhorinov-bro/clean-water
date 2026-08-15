@@ -1,0 +1,115 @@
+/* Bosh sahifa — Dashboard (§7 dagi 8-band).
+   §3: dekorativ shkala yo'q. Bannerdan keyin darhol katalogdagi HAQIQIY
+   mahsulotlar keladi. */
+
+.page {
+  max-width: var(--cw-container);
+  margin: 0 auto;
+  padding: var(--cw-space-8) var(--cw-space-4) var(--cw-space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-12);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+  padding: var(--cw-space-12) var(--cw-space-6);
+  border-radius: var(--cw-radius-lg);
+  /* Palitradagi ikki rang — «3D banner» o'rniga toza gradient. Rasm yo'q:
+     u yuklanguncha sahifa siljib turardi va SEO uchun foyda bermaydi. */
+  background: linear-gradient(135deg, var(--cw-sky-soft), var(--cw-surface-raised));
+  border: 1px solid var(--cw-border);
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: var(--cw-text-4xl);
+  line-height: 1.1;
+  letter-spacing: var(--cw-tracking-display);
+}
+
+.heroLead {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--cw-text-muted);
+  font-size: var(--cw-text-lg);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-3);
+  margin-top: var(--cw-space-2);
+}
+
+.primary,
+.secondary {
+  padding: var(--cw-space-3) var(--cw-space-6);
+  border-radius: var(--cw-radius);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.primary {
+  background: var(--cw-accent);
+  color: var(--cw-accent-contrast);
+}
+
+.primary:hover {
+  background: var(--cw-accent-hover);
+}
+
+.secondary {
+  border: 1px solid var(--cw-border);
+  color: var(--cw-text);
+  background: var(--cw-surface);
+}
+
+.secondary:hover {
+  border-color: var(--cw-accent);
+  color: var(--cw-accent);
+}
+
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--cw-text-2xl);
+  letter-spacing: var(--cw-tracking-tight);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--cw-space-4);
+}
+
+.empty {
+  margin: 0;
+  color: var(--cw-text-muted);
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: var(--cw-space-8) var(--cw-space-4);
+  }
+
+  .heroTitle {
+    font-size: var(--cw-text-3xl);
+  }
+
+  .heroActions {
+    flex-direction: column;
+  }
+
+  .primary,
+  .secondary {
+    text-align: center;
+  }
+}

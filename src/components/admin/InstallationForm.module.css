@@ -144,3 +144,14 @@
   color: var(--cw-danger);
   font-size: var(--cw-text-sm);
 }
+
+/* Telefonda kartrij tanlovi va sana bir qatorga sig'maydi. */
+@media (max-width: 560px) {
+  .partRow {
+    grid-template-columns: 1fr auto;
+  }
+
+  .partRow select {
+    grid-column: 1 / -1;
+  }
+}

@@ -215,8 +215,33 @@ dagi menyu va sahifa matnlarida — o'zgartiriladi.
       Montserrat `next/font` orqali — CSP `font-src 'self'` tashqi yuklashni
       bloklaydi. Qurilgan HTML da tekshirilgan: tashqi so'rov yo'q.
       Mavzu ustunligi: qo'lda tanlov > Telegram > tizim.
-- [ ] Dashboard: banner «CLEAN WATER ga xush kelibsiz» + katalogga o'tish. Dekorativ progress-shkala yo'q — faqat real ma'lumot.
-- [ ] Responsive tekshiruv + PWA manifest.
+- [x] Dashboard: banner «CLEAN WATER ga xush kelibsiz» + katalogga o'tish. Dekorativ progress-shkala yo'q — faqat real ma'lumot.
+      Sayt: `(web)/[locale]/page.tsx` — banner, katalogga o'tish, katalogdagi
+      **haqiqiy** mahsulotlar (ISR 60 s, SEO uchun kontent).
+      Mini App: `(miniapp)/app/page.tsx` — banner va mijozning **eng shoshilinch
+      kartriji** (`services/dashboard.ts`, 7 test). O'rnatish qayd etilmagan bo'lsa
+      blok umuman ko'rsatilmaydi — bo'sh shkala chizilmaydi.
+      Dastlabki g'oyadagi «o'z-o'zidan to'ladigan» modul shkalalari YO'Q (§3).
+      «3D banner» o'rniga palitradagi gradient: rasm yuklanguncha sahifa siljirdi
+      va SEO uchun foyda bermasdi.
+- [x] Responsive tekshiruv + PWA manifest.
+      `app/manifest.ts` (PWA), `app/robots.ts`, `app/sitemap.ts` (ikki til,
+      `alternates` bilan), `public/icon.svg`, `viewport` ikkala layoutda.
+      PWA **saytga** tegishli — Mini App Telegram ichida ishlaydi va unga manifest
+      kerak emas. `start_url: /uz`: `/` ni proxy yo'naltiradi va PWA ochilishida
+      ortiqcha redirect bo'lardi.
+      **TOPILGAN VA TUZATILGAN XATO**: `proxy.ts` matcheri fayllarni NOM bo'yicha
+      sanab chiqqan va `manifest.webmanifest`, `icon.svg` ro'yxatga kirmay qolgan —
+      ular `/uz/...` ga yo'naltirilgan. Brauzer 307 ni kuzatib HTML olgan va uni
+      jimgina tashlab yuborgan: PWA manifesti ham, favicon ham ishlamagan.
+      Endi qoida umumiy — «nuqtasi bor yo'l fayl», va u `src/proxy.test.ts` (8 test)
+      bilan mustahkamlangan.
+      Responsive: tartiblar `auto-fit` grid va `flex-wrap` da (media query siz
+      moslashadi), jadvallar `overflow-x: auto` ichida. Qo'shimcha media query lar —
+      blok muharriri (4 ustun → 2), o'rnatish formasi, admin menyusi.
+      **TEKSHIRILMAGAN: haqiqiy qurilmada** — bu mashinada brauzer avtomatizatsiyasi
+      yo'q. CSS darajasida ko'rib chiqilgan, telefon va planshetda ko'z bilan
+      tekshirish kerak.
 
 ### Ishga tushirishdan oldin (kritik yo'l 9)
 - [ ] Xavfsizlik: CSP sarlavhalari, HTTPS majburiy, sirlar faqat env da, formalarga rate-limit, spam himoyasi (§7).

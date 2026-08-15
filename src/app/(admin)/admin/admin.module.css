@@ -218,3 +218,16 @@
   font: inherit;
   min-width: 220px;
 }
+
+/* Telefonda menyu sarlavha ostiga tushadi. */
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--cw-space-2);
+  }
+
+  .spacer {
+    margin-left: 0;
+  }
+}

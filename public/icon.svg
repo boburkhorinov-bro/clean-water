@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Clean Water">
+  <!-- Brend belgisi: suv tomchisi. Ranglar `tokens.css` dagi palitradan —
+       binafsha (asosiy harakat) va osmon rangi (suv). -->
+  <rect width="512" height="512" rx="112" fill="#5b3fd9"/>
+  <path d="M256 96c0 0-104 118-104 186a104 104 0 1 0 208 0c0-68-104-186-104-186z" fill="#d9ecfd"/>
+  <path d="M256 168c0 0-56 68-56 114a56 56 0 0 0 56 56z" fill="#2e8fe8"/>
+</svg>

@@ -11,8 +11,21 @@ import { DEFAULT_LOCALE, LOCALES } from '@/lib/i18n/locales';
  *
  * Next.js 16 da bu konvensiya `middleware` emas, `proxy` deb ataladi.
  */
+
+/**
+ * Nuqtasi bor yo'l — bu fayl, sahifa emas.
+ *
+ * Fayllarni nom bo'yicha sanab chiqish bir marta qimmatga tushdi:
+ * `manifest.webmanifest` va `icon.svg` ro'yxatga kirmay qolgan va `/uz/...`
+ * ga yo'naltirilgan. Brauzer 307 ni kuzatib HTML olgan va uni jimgina
+ * tashlab yuborgan — PWA manifesti ham, favicon ham ishlamagan.
+ */
+const FILE_PATH = /\.[^/]+$/;
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (FILE_PATH.test(pathname)) return NextResponse.next();
 
   const hasLocale = LOCALES.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`),
@@ -26,7 +39,9 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Mini App, admin, API, Next.js ichki fayllari va media — chetlab o'tiladi.
-    '/((?!app|admin|api|_next|media|favicon.ico|robots.txt|sitemap.xml).*)',
+    // Mini App, admin, API, Next.js ichki fayllari va kengaytmali fayllar —
+    // chetlab o'tiladi. Kengaytma qoidasi funksiya ichida ham takrorlanadi:
+    // matcher o'zgarsa ham xatti-harakat buzilmasin.
+    '/((?!app|admin|api|_next|.*\\..*).*)',
   ],
 };

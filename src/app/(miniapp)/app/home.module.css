@@ -1,9 +1,20 @@
-/* Mini App bosh ekrani. */
+/* Mini App dashboardi (§3). Dekorativ shkala yo'q — bannerdan keyin
+   mijozning haqiqiy kartriji, keyin navigatsiya. */
 
 .page {
   max-width: var(--cw-container);
   margin: 0 auto;
-  padding: var(--cw-space-8) var(--cw-space-4);
+  padding: var(--cw-space-6) var(--cw-space-4) var(--cw-space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-4);
+}
+
+.hero {
+  padding: var(--cw-space-6) var(--cw-space-4);
+  border-radius: var(--cw-radius-lg);
+  background: linear-gradient(135deg, var(--cw-sky-soft), var(--cw-surface-raised));
+  border: 1px solid var(--cw-border);
   display: flex;
   flex-direction: column;
   gap: var(--cw-space-2);
@@ -11,13 +22,56 @@
 
 .title {
   margin: 0;
-  font-size: var(--cw-text-3xl);
+  font-size: var(--cw-text-2xl);
+  line-height: 1.15;
   letter-spacing: var(--cw-tracking-display);
 }
 
 .tagline {
-  margin: 0 0 var(--cw-space-4);
+  margin: 0;
   color: var(--cw-text-muted);
+}
+
+/* Haqiqiy holat bloki. Rangi kartrij holatidan keladi — bezak emas. */
+.urgent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--cw-space-4);
+  border: 1px solid var(--cw-border);
+  border-left: 4px solid var(--cw-gauge-ok);
+  border-radius: var(--cw-radius-lg);
+  background: var(--cw-surface);
+  color: var(--cw-text);
+  text-decoration: none;
+}
+
+.urgent[data-state='SOON'] {
+  border-left-color: var(--cw-gauge-soon);
+}
+
+.urgent[data-state='DUE'] {
+  border-left-color: var(--cw-gauge-due);
+}
+
+.urgentLabel {
+  font-size: var(--cw-text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--cw-tracking-label);
+  color: var(--cw-text-muted);
+}
+
+.urgentName {
+  font-weight: 600;
+}
+
+.urgentDue {
+  font-size: var(--cw-text-sm);
+  color: var(--cw-text-muted);
+}
+
+.urgent[data-state='DUE'] .urgentDue {
+  color: var(--cw-gauge-due);
 }
 
 .nav {

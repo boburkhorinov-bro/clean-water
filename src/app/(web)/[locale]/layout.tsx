@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { montserrat } from '@/app/fonts';
 import { LOCALES, isLocale } from '@/lib/i18n/locales';
@@ -7,6 +7,17 @@ import '../../globals.css';
 export const metadata: Metadata = {
   title: 'Clean Water',
   description: 'Osmos suv filtrlari va kartrijlar',
+  // PWA: sayt brauzerdan «o'rnatiladi» (§7 dagi 8-band). Mini App uchun
+  // manifest kerak emas — u Telegram ichida ishlaydi.
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon.svg' },
+};
+
+/** Telefon brauzeri manzil satrini brend rangiga bo'yaydi. */
+export const viewport: Viewport = {
+  themeColor: '#5b3fd9',
+  width: 'device-width',
+  initialScale: 1,
 };
 
 /** SSR + ISR: har ikkala til uchun statik parametrlar (§4.3). */
