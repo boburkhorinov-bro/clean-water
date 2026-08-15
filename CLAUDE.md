@@ -27,7 +27,12 @@ PGDATA="/c/Users/Lenovo/pgdata-cleanwater"
 - `pg_ctl` chiqishini `| tail` ga **ulamang** — osilib qoladi.
 - Serverni bash vazifasi ichida qoldirmang: vazifa to'xtatilsa postgres ham o'ladi.
 - `DATABASE_URL="postgresql://cleanwater:cleanwater@127.0.0.1:5432/cleanwater?schema=public"`
-- `.env` yo'q (ruxsat sozlamalari yozishni taqiqlaydi) — o'zgaruvchini qo'lda bering.
+  — `localhost` **emas**: Windows da u avval `::1` ga hal bo'ladi, postgres esa
+  faqat `127.0.0.1` ni tinglaydi.
+- `.env` bor — `env.example` dan yasalgan, o'zgaruvchini qo'lda berish shart emas.
+  Ruxsat sozlamalari uni **o'qishni** taqiqlaydi (`Read(.env)`), yozishni emas.
+  Telegram qiymatlari bo'sh (bot tokeni, admin ID lar, menejerlar guruhi) —
+  ular loyiha egasida.
 
 ## Muhit cheklovi: 3.8 GB RAM
 

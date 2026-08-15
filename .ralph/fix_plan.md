@@ -368,9 +368,22 @@ MVP ga kirmaydi (§2). Menyuda ko'rsatilmaydi — «tez orada» zaglushkalari yo
 - **Baza ishlayapti, lekin Docker siz va xizmat sifatida emas.** Har safar ishni
   boshlashdan oldin postgres ni qo'lda ko'tarish kerak — buyruqlar `.ralph/AGENT.md`
   dagi «Lokal baza» bo'limida. `docker compose up` hamon sinalmagan.
-- **`.env` yaratilmagan.** Ruxsat sozlamalari `.env` ga yozishni taqiqlaydi,
-  shuning uchun barcha buyruqlarda `DATABASE_URL` qo'lda berilgan. Ishni qulay
-  qilish uchun: `cp env.example .env`.
+- **`.env` yaratilgan** (2026-08-16, `env.example` dan) — `DATABASE_URL` ni endi
+  har buyruqda qo'lda berish shart emas. `JWT_SECRET` va
+  `TELEGRAM_WEBHOOK_SECRET` CSPRNG (`crypto.randomBytes`) bilan generatsiya
+  qilingan; `Get-Random` bunga yaramaydi — u `System.Random` ga tayanadi va
+  taxmin qilinadigan sir JWT ni soxtalashtirishga yo'l ochardi.
+  `DATABASE_URL` da host `127.0.0.1`, **`localhost` emas**: Windows da u avval
+  `::1` ga hal bo'ladi va postgres uni tinglamaydi.
+  Telegram qiymatlari (bot tokeni, `TELEGRAM_ADMIN_IDS`,
+  `TELEGRAM_MANAGER_CHAT_ID`) bo'sh — ular loyiha egasida.
+  **Namuna fayli nuqtasiz — `env.example`.** Ilgari ildizda `.env.example`
+  nomli bo'sh KATALOG turgan va undan nusxalash `.env` ni ham bo'sh katalog
+  qilib qo'ygan; ikkalasi olib tashlandi.
+  **Ruxsat sozlamalari `.env` ni O'QISHNI taqiqlaydi** (`Read(.env)`,
+  `Read(.env.*)`), yozishni emas.
+  **TASDIQLANDI**: 355 birlik + 251 integratsiya testi o'tdi, ishga tushirilgan
+  ilovada `/api/health` 200, `/uz` 200, `/` → 307 `/uz`.
 - **Versiya cheklovlari** `.ralph/AGENT.md` da — TypeScript 6.x va ESLint 9.x
   ataylab `latest` emas. Ko'tarmang, lint buziladi.
 - To'liq TZ: `.ralph/specs/requirements.md` (ildizdagi `spec.md` bilan sinxron;
