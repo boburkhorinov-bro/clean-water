@@ -135,3 +135,14 @@ Bular xato emas, lekin bilib turishingiz kerak:
   holat saqlashni (Redis) talab qilardi, u MVP da yo'q.
 - **Sessiyani darhol bekor qilib bo'lmaydi** — JWT bazada saqlanmaydi,
   shuning uchun amal muddati 24 soat.
+
+- **Telefonsiz Mini App mijozi kartrij buyurtma qila olmaydi.** Telegram
+  avtorizatsiyasi telefon raqamini bermaydi. Bunday mijoz «Almashtirishga
+  buyurtma» ni bossa, bot «raqamni ilovada qoldiring» deydi, lekin Mini App da
+  bunday forma yo'q — mijoz boshi berk ko'chada qoladi va siz urinish
+  bo'lganini bilmaysiz.
+  **Amaliy chora:** o'rnatishni CRM da yozayotganda mijoz kartochkasida
+  telefon borligiga ishonch hosil qiling. Telefon bo'lsa muammo umuman
+  yuzaga kelmaydi.
+  Doimiy yechim (botda `request_contact` tugmasi) keyingi bosqichga
+  qoldirilgan — `.ralph/fix_plan.md` dagi «Future Enhancements».

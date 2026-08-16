@@ -358,6 +358,22 @@ Bu punktlar loopni bloklamaydi — ular loyiha egasi zimmasida yoki MVP dan tash
 
 MVP ga kirmaydi (§2). Menyuda ko'rsatilmaydi — «tez orada» zaglushkalari yo'q.
 
+- [ ] **Telefonsiz Mini App mijozidan raqam olish** (2026-08-16 da topildi,
+      egasining qaroriga ko'ra keyingi bosqichga qoldirildi).
+      Hozirgi holat: `replacement-request.ts:53` telefonsiz mijozga ariza
+      yaratmaydi va `PHONE_REQUIRED` qaytaradi. Bot javobi — «Ariza uchun
+      telefon raqami kerak. Uni ilovada qoldiring», **lekin Mini App da
+      telefon kiritish formasi yo'q** (`(miniapp)/app` va
+      `(miniapp)/app/mening-filtrim` — boshqa marshrut yo'q).
+      Qanday yuzaga keladi: Telegram avtorizatsiyasi telefon bermaydi, faqat
+      `telegram_id`. Mijoz Mini App ni ochsa, `phone` bo'sh User yaratiladi.
+      CRM qidiruvi telefonsizlarni chiqarib tashlamaydi, shuning uchun menejer
+      uni ism bo'yicha topib o'rnatish yozishi mumkin — o'shanda tuzoq yopiladi.
+      Oqibati: mijoz bajarib bo'lmaydigan ishga yo'naltiriladi, menejer esa
+      urinish bo'lganini bilmaydi (Lead ham, xabarnoma ham yo'q).
+      Tavsiya: botda `request_contact` tugmasi — Telegram ning o'z mexanizmi,
+      ilovaga o'tish shart emas. Yoniga arzon to'siq: o'rnatish yozilayotganda
+      telefonni majburiy qilish (yangi holatlarni oldini oladi).
 - [ ] Filtr tanlash uchun kviz.
 - [ ] Servis-markaz bo'limi (biz haqimizda / xizmatlar / narxlar / shikoyatlar).
 - [ ] Mijozlar fikr-mulohazalari.
