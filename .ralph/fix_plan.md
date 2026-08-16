@@ -344,7 +344,13 @@ egasida (pastdagi «Optional»).
 
 Bu punktlar loopni bloklamaydi — ular loyiha egasi zimmasida yoki MVP dan tashqarida.
 
-- [ ] Infratuzilma (egasida): YaTT/yuridik shaxs → domen → O'zbekistonda VPS → Docker + PostgreSQL + zaxiralar.
+- [ ] Infratuzilma (egasida): YaTT/yuridik shaxs → domen → VPS → Docker + PostgreSQL + zaxiralar.
+      **Byudjet talabi: platforma bepul ishlashi kerak** (egasining qarori,
+      2026-08-16). Variantlar tahlili — `docs/DEPLOY-FREE.md`. Qisqasi:
+      Oracle Cloud Always Free (2 OCPU / 12 GB ARM) mavjud `docker-compose.yml`
+      ni o'zgarishsiz ko'taradi; Vercel Hobby **yaramaydi** (tijoriy foydalanish
+      shartlarda taqiqlangan), uxlaydigan bepul rejalar esa eslatmalar
+      rejalashtiruvchisini buzadi. Yagona muqarrar xarajat — domen.
 - [ ] Kontent (egasida): kamida 3–5 filtr modeli — foto, xarakteristika, narx, ikki tilda tavsif; kartrijlar ro'yxati resurs oylari bilan; videoobzorlar.
 - [ ] Risk tekshiruvi: Kinescope pleerini real iOS va Android da Telegram WebView ichida sinash — barcha videolar yuklanguncha.
 

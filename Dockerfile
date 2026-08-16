@@ -15,6 +15,26 @@ COPY . .
 # Haqiqiy URL ish vaqtida beriladi.
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# `NEXT_PUBLIC_*` QURISH paytida kodga muhrlanadi (§4.7). Uni faqat
+# docker-compose dagi `environment:` da berish yetarli emas — obraz o'shanda
+# allaqachon qurilgan bo'ladi va canonical, hreflang, robots.txt, sitemap.xml
+# ichida `http://localhost:3000` qolib ketadi. Ilova ko'tariladi, sahifalar 200
+# qaytaradi, buzilish esa faqat qidiruv indeksida ko'rinadi.
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+
+# Bu yerda to'xtash — yagona imkoniyat: ish vaqtidagi tekshiruv
+# (instrumentation.ts) muhrlangan qiymatni emas, `environment:` dagisini ko'radi
+# va noto'g'ri obrazni o'tkazib yuboradi.
+RUN case "$NEXT_PUBLIC_SITE_URL" in \
+      https://*) ;; \
+      *) echo "XATO: NEXT_PUBLIC_SITE_URL build vaqtida https:// manzil bo'lishi shart." >&2; \
+         echo "  --build-arg NEXT_PUBLIC_SITE_URL=https://<domen> bering," >&2; \
+         echo "  yoki .env da NEXT_PUBLIC_SITE_URL ni to'ldiring (docker compose o'zi uzatadi)." >&2; \
+         exit 1 ;; \
+    esac
+
 RUN npx prisma generate && npm run build
 
 FROM node:24-alpine AS runner

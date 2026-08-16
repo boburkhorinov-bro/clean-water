@@ -30,6 +30,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # `NEXT_PUBLIC_*` qurish paytida muhrlanadi — pastdagi `environment:`
+        # bu qiymat uchun kech qoladi (§4.7). Ikkalasi ham kerak: build —
+        # canonical/hreflang/sitemap uchun, environment — env.ts tekshiruvi
+        # va server tomonidagi dinamik o'qish uchun.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
     restart: unless-stopped
     depends_on:
       postgres:

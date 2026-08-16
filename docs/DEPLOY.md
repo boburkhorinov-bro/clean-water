@@ -18,6 +18,10 @@ qadamlarni **birma-bir**, har birining natijasini tekshirib bajaring.
 - A-yozuvi serverga qaratilgan domen.
 - 80 va 443 portlari ochiq (Let's Encrypt HTTP tekshiruvi 80 ni talab qiladi).
 
+Server hali tanlanmagan bo'lsa — [DEPLOY-FREE.md](DEPLOY-FREE.md): nol byudjet
+bilan qaysi variant bu arxitekturaga mos kelishi va nega ko'pchiligi
+kelmasligi.
+
 ## 2. Sozlash
 
 ```bash
@@ -38,7 +42,30 @@ ko'tarilmaydi** — `src/server/env.ts` startda tekshiradi:
 | `TELEGRAM_MANAGER_CHAT_ID` | Arizalar tushadigan guruh |
 | `TELEGRAM_WEBHOOK_SECRET` | `openssl rand -hex 32`. Bo'sh bo'lsa webhook hamma so'rovni 401 qiladi |
 | `TELEGRAM_ADMIN_IDS` | Bootstrap adminlar, vergul bilan |
-| `NEXT_PUBLIC_SITE_URL` | `https://<domen>` — **prodda HTTPS shart** |
+| `NEXT_PUBLIC_SITE_URL` | `https://<domen>` — **prodda HTTPS shart, va u QURISHDAN OLDIN kerak** (pastga qarang) |
+
+### `NEXT_PUBLIC_SITE_URL` — obrazni qurishdan oldin
+
+`NEXT_PUBLIC_*` bilan boshlanadigan har qanday o'zgaruvchini Next.js **qurish
+paytida** kodga muhrlaydi. Ya'ni uni `docker compose` ning `environment:`
+qismida berish **kech**: obraz o'shanda allaqachon qurilgan bo'ladi.
+
+Domen `.env` da noto'g'ri bo'lsa nima bo'lardi: ilova normal ko'tariladi,
+barcha sahifalar 200 qaytaradi, smoke-test o'tadi — lekin har bir `canonical`,
+`hreflang`, `robots.txt` va `sitemap.xml` `http://localhost:3000` ga ishora
+qiladi. Buni faqat qidiruv tizimi indeksni buzganda sezish mumkin (§4.7).
+
+Shuning uchun `Dockerfile` build bosqichida to'xtaydi, agar qiymat `https://`
+bilan boshlanmasa. Amaliy oqibati:
+
+```bash
+# .env da NEXT_PUBLIC_SITE_URL="https://<domen>" TO'LDIRILGAN bo'lishi kerak,
+# ANDIN keyin qurish. docker compose uni build-arg sifatida o'zi uzatadi.
+docker compose build web
+```
+
+**Domen o'zgarsa obrazni qayta qurish shart** — konteynerni qayta ishga
+tushirish yetarli emas.
 
 Ixtiyoriy:
 
