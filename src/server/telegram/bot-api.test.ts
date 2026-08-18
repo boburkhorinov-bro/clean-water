@@ -78,6 +78,22 @@ describe('sendBotMessage', () => {
     await expect(sendBotMessage({ chatId: 555n, text: 'salom' })).rejects.toThrow();
   });
 
+  test('Telegram ning SABABI xatoda saqlanadi — u `notifications.error` ga yoziladi', async () => {
+    // Faqat `403` deb yozilsa, satr har kuni qayta olinadi va nima uchun
+    // yetib bormayotgani hech qachon ma'lum bo'lmaydi. Mijoz botni bloklagan
+    // bo'lsa, buni menejer ko'rishi va telefon qilishi kerak.
+    vi.stubEnv('TELEGRAM_BOT_TOKEN', 'token-123');
+    stubFetch({
+      status: 403,
+      ok: false,
+      json: async () => ({ description: 'Forbidden: bot was blocked by the user' }),
+    } as Partial<Response> & { status: number });
+
+    await expect(sendBotMessage({ chatId: 555n, text: 'salom' })).rejects.toThrow(
+      /bot was blocked by the user/,
+    );
+  });
+
   test('token sozlanmagan bo‘lsa aniq xato beradi', async () => {
     vi.stubEnv('TELEGRAM_BOT_TOKEN', '');
 

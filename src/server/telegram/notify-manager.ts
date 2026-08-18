@@ -43,6 +43,8 @@ interface RetryOptions {
 /** Telegram 429 bilan javob berganda qancha kutish kerakligini olib yuruvchi xato. */
 export class TelegramRateLimitError extends Error {
   readonly retryAfterSeconds: number;
+  /** 429 taslim bo'lishni emas, kutishni talab qiladi. */
+  readonly permanent = false;
 
   constructor(retryAfterSeconds: number) {
     super(`Telegram 429, retry_after=${retryAfterSeconds}`);
@@ -51,12 +53,98 @@ export class TelegramRateLimitError extends Error {
   }
 }
 
+/**
+ * Telegram javobidagi tashxis uchun zarur hamma narsani olib yuruvchi xato.
+ *
+ * `description` ni tashlab yubormaslik muhim: `403` ning o'zi bot
+ * chiqarilganini ham, huquq yo'qligini ham, guruh o'chganini ham bildirishi
+ * mumkin. Bularning har biri boshqacha harakat talab qiladi, va farqni faqat
+ * Telegram ning matni aytadi.
+ */
+export class TelegramSendError extends Error {
+  readonly status: number;
+  readonly description: string | null;
+  /** 4xx — qayta urinish yordam bermaydi, faqat mijozni kuttiradi. */
+  readonly permanent: boolean;
+  /** Guruh supergruppaga aylanganda Telegram beradigan yangi `chat_id`. */
+  readonly migrateToChatId: string | null;
+
+  constructor(params: {
+    status: number;
+    description: string | null;
+    migrateToChatId: string | null;
+    method: string;
+  }) {
+    const parts = [`Telegram ${params.method} ${params.status}`];
+    if (params.description) parts.push(params.description);
+    if (params.migrateToChatId) {
+      parts.push(
+        `guruh supergruppaga aylandi — TELEGRAM_MANAGER_CHAT_ID ni ` +
+          `${params.migrateToChatId} ga o‘zgartiring va xizmatni qayta ishga tushiring`,
+      );
+    }
+
+    super(parts.join(': '));
+    this.name = 'TelegramSendError';
+    this.status = params.status;
+    this.description = params.description;
+    this.migrateToChatId = params.migrateToChatId;
+    this.permanent = params.status >= 400 && params.status < 500;
+  }
+}
+
+interface TelegramErrorBody {
+  description?: unknown;
+  parameters?: {
+    retry_after?: unknown;
+    migrate_to_chat_id?: unknown;
+  };
+}
+
+/**
+ * Telegram javobidan xato quradi.
+ *
+ * Tana JSON bo'lmasligi mumkin (oradagi proksi HTML qaytarishi mumkin), shuning
+ * uchun har bir maydon alohida tekshiriladi — tashxis xabari yo'qolgani
+ * xatoning o'zini yo'qotmasligi kerak.
+ */
+export function buildTelegramError(
+  status: number,
+  body: unknown,
+  method = 'sendMessage',
+): Error {
+  const parsed: TelegramErrorBody = typeof body === 'object' && body !== null ? body : {};
+
+  if (status === 429) {
+    const retryAfter = parsed.parameters?.retry_after;
+    return new TelegramRateLimitError(typeof retryAfter === 'number' ? retryAfter : 30);
+  }
+
+  const migrate = parsed.parameters?.migrate_to_chat_id;
+
+  return new TelegramSendError({
+    status,
+    method,
+    description: typeof parsed.description === 'string' ? parsed.description : null,
+    migrateToChatId: typeof migrate === 'number' ? String(migrate) : null,
+  });
+}
+
 function retryAfterOf(error: unknown): number | null {
   if (typeof error === 'object' && error !== null && 'retryAfterSeconds' in error) {
     const value = (error as { retryAfterSeconds: unknown }).retryAfterSeconds;
     if (typeof value === 'number' && Number.isFinite(value)) return value;
   }
   return null;
+}
+
+function isPermanent(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'permanent' in error &&
+    (error as { permanent: unknown }).permanent === true
+  );
 }
 
 export async function sendWithRetry<T>(
@@ -71,6 +159,12 @@ export async function sendWithRetry<T>(
     } catch (error) {
       lastError = error;
       if (attempt === attempts) break;
+
+      // Doimiy xatoda (bot chiqarilgan, guruh o'chgan, chat topilmadi) qayta
+      // urinish natijani o'zgartirmaydi, faqat vaqt yeydi — va bu vaqtni MIJOZ
+      // kutadi: xabarnoma javobdan oldin bajariladi. O'lchangan farq:
+      // 3 urinish bilan 15.4 s, bittasi bilan 2.4 s.
+      if (isPermanent(error)) break;
 
       // §4.6: 429 da o'z kechikishimizni emas, Telegram bergan qiymatni
       // hurmat qilamiz — aks holda blokdan chiqa olmaymiz.
@@ -127,15 +221,10 @@ export async function notifyManagers(lead: Lead): Promise<void> {
         }),
       });
 
-      if (response.status === 429) {
-        const body = (await response.json().catch(() => null)) as {
-          parameters?: { retry_after?: number };
-        } | null;
-        throw new TelegramRateLimitError(body?.parameters?.retry_after ?? 30);
-      }
-
       if (!response.ok) {
-        throw new Error(`Telegram sendMessage ${response.status}`);
+        // Tana faqat shu yerda o'qiladi: muvaffaqiyatli javobda u kerak emas.
+        const body: unknown = await response.json().catch(() => null);
+        throw buildTelegramError(response.status, body);
       }
 
       return response;

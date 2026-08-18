@@ -1,5 +1,11 @@
 import { describe, expect, test, vi } from 'vitest';
-import { buildLeadMessage, sendWithRetry } from './notify-manager';
+import {
+  buildLeadMessage,
+  buildTelegramError,
+  sendWithRetry,
+  TelegramRateLimitError,
+  TelegramSendError,
+} from './notify-manager';
 
 /**
  * §4.5: «Menejerlar guruhiga «Ishga olish» inline tugmasi bilan asinxron
@@ -119,5 +125,99 @@ describe('sendWithRetry', () => {
 
     expect(sleep).toHaveBeenNthCalledWith(1, 100);
     expect(sleep).toHaveBeenNthCalledWith(2, 200);
+  });
+});
+
+/**
+ * Telegram xatosining TASHXIS QO'YILADIGAN bo'lishi.
+ *
+ * Haqiqiy holat (2026-08-16): bot menejerlar guruhidan chiqarilgan edi va log da
+ * faqat `Telegram sendMessage 403` ko'rindi. Sababni bilish uchun Telegram API
+ * ga QO'LDA murojaat qilishga to'g'ri keldi — javob tanasidagi `description`
+ * («bot was kicked from the group chat») tashlab yuborilgan edi.
+ *
+ * Prodda bu qimmatga tushadi: menejer «arizalar kelmayapti» deydi, log esa
+ * bot chiqarilganmi, huquq yo'qmi, guruh o'chganmi — ayta olmaydi.
+ */
+describe('buildTelegramError', () => {
+  test('xato matnida Telegram ning description i bo‘ladi', () => {
+    const error = buildTelegramError(403, {
+      description: 'Forbidden: bot was kicked from the group chat',
+    });
+
+    expect(error.message).toContain('403');
+    expect(error.message).toContain('bot was kicked from the group chat');
+  });
+
+  test('description yo‘q bo‘lsa ham status ko‘rinadi', () => {
+    // Tarmoq oralig'idagi proksi JSON emas, HTML qaytarishi mumkin.
+    const error = buildTelegramError(502, null);
+
+    expect(error.message).toContain('502');
+  });
+
+  test('429 — retry_after ni olib yuruvchi alohida xato', () => {
+    const error = buildTelegramError(429, { parameters: { retry_after: 7 } });
+
+    expect(error).toBeInstanceOf(TelegramRateLimitError);
+    expect((error as TelegramRateLimitError).retryAfterSeconds).toBe(7);
+  });
+
+  test('migrate_to_chat_id — YANGI ID xato matnida ko‘rinadi', () => {
+    // Guruh supergruppaga aylanganda `chat_id` o'zgaradi va eskisi ishlamaydi.
+    // Kod uni o'zi tuzata olmaydi — `chat_id` env da statik. Yagona foydali
+    // narsa: yangi ID ni log ga aniq chiqarish, aks holda xabarnomalar
+    // JIMGINA to'xtaydi va sababi topilmaydi.
+    const error = buildTelegramError(400, {
+      description: 'Bad Request: group chat was upgraded to a supergroup chat',
+      parameters: { migrate_to_chat_id: -1001234567890 },
+    });
+
+    expect(error).toBeInstanceOf(TelegramSendError);
+    expect((error as TelegramSendError).migrateToChatId).toBe('-1001234567890');
+    expect(error.message).toContain('-1001234567890');
+    expect(error.message).toContain('TELEGRAM_MANAGER_CHAT_ID');
+  });
+
+  test('4xx doimiy deb belgilanadi', () => {
+    // Bot chiqarilgan bo'lsa, uch marta urinish ham yordam bermaydi.
+    expect((buildTelegramError(403, null) as TelegramSendError).permanent).toBe(true);
+    expect((buildTelegramError(400, null) as TelegramSendError).permanent).toBe(true);
+  });
+
+  test('5xx vaqtinchalik — qayta urinishga arziydi', () => {
+    expect((buildTelegramError(500, null) as TelegramSendError).permanent).toBe(false);
+    expect((buildTelegramError(502, null) as TelegramSendError).permanent).toBe(false);
+  });
+
+  test('429 doimiy EMAS — u kutishni talab qiladi, taslim bo‘lishni emas', () => {
+    expect(buildTelegramError(429, null)).toBeInstanceOf(TelegramRateLimitError);
+  });
+});
+
+describe('sendWithRetry — doimiy xatolar', () => {
+  test('doimiy xatoda qayta urinilmaydi', async () => {
+    // O'lchangan oqibat: bot guruhdan chiqarilganda `POST /api/leads` 15.4 s
+    // davom etdi (3 urinish + kechikishlar), tuzatilgach 2.4 s. Xabarnoma
+    // javobdan oldin kutiladi, ya'ni buni MIJOZ kutadi.
+    const send = vi.fn().mockRejectedValue(buildTelegramError(403, { description: 'kicked' }));
+    const sleep = vi.fn().mockResolvedValue(undefined);
+
+    await expect(sendWithRetry(send, { attempts: 3, sleep })).rejects.toThrow('403');
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  test('vaqtinchalik xatoda avvalgidek qayta urinadi', async () => {
+    const send = vi
+      .fn()
+      .mockRejectedValueOnce(buildTelegramError(503, null))
+      .mockResolvedValue({ ok: true });
+    const sleep = vi.fn().mockResolvedValue(undefined);
+
+    await sendWithRetry(send, { attempts: 3, sleep });
+
+    expect(send).toHaveBeenCalledTimes(2);
   });
 });

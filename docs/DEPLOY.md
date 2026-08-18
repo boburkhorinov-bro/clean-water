@@ -141,6 +141,31 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 Tekshirish: `curl https://api.telegram.org/bot<TOKEN>/getWebhookInfo` —
 `pending_update_count` o'smasligi kerak.
 
+## 5.1. Mini App ni BotFather da ro'yxatdan o'tkazish
+
+Webhook ulangani Mini App ni ochmaydi — bu ikki xil narsa. Telegram
+mijozga ilovani ko'rsatishi uchun bot sozlamalarida manzil qayd etilishi
+kerak, aks holda `.env` to'g'ri bo'lsa ham mijozda ochiladigan hech narsa
+bo'lmaydi.
+
+@BotFather da:
+
+```
+/mybots -> <bot> -> Bot Settings -> Menu Button -> Configure menu button
+manzil: https://<domen>/app
+matn  : Mening filtrim
+```
+
+Yoki alohida Mini App sifatida: `/newapp` -> botni tanlang -> nom, tavsif,
+ikonka (640x360) -> Web App URL: `https://<domen>/app`.
+
+Tekshirish: Telegramda botni oching, pastdagi menyu tugmasi bosilganda
+ilova ochilishi va katalog ko'rinishi kerak.
+
+**HTTPS shart.** Telegram Mini App ni faqat haqiqiy sertifikat bilan
+ochadi — o'z-o'zini imzolagan sertifikat ishlamaydi. Shuning uchun bu qadam
+§4 (TLS) dan KEYIN bajariladi.
+
 ## 6. Zaxira
 
 `backup` konteyneri har kuni `BACKUP_HOUR` da:
@@ -241,6 +266,7 @@ bo'ladi.
 - [ ] TLS ishlaydi, HTTP → HTTPS yo'naltiriladi, HSTS sarlavhasi bor
 - [ ] `sh scripts/smoke.sh https://<domen>` — hammasi joyida
 - [ ] Telegram webhook o'rnatilgan (`getWebhookInfo` da xato yo'q)
+- [ ] Mini App BotFather da ro'yxatdan o'tkazilgan (menyu tugmasi ilovani ochadi)
 - [ ] Menejerlar guruhiga sinov arizasi keldi
 - [ ] `docker compose logs backup` — birinchi zaxira olindi va tekshirildi
 - [ ] Zaxiralar serverdan tashqariga nusxalanadi
@@ -261,3 +287,9 @@ bo'ladi.
   qilardi (Redis) — §4.1 ga ko'ra u startda yo'q.
 - **Sessiyani darhol bekor qilib bo'lmaydi**: JWT bazada saqlanmaydi,
   shuning uchun amal muddati qisqa (24 soat).
+- **`worker` Docker siz `.env` ni o'qimaydi.** `npm run worker` (`tsx`) Next.js
+  dan farqli o'laroq `.env` ni avtomatik yuklamaydi, shuning uchun to'g'ridan-
+  to'g'ri VM da ishga tushirilsa `DATABASE_URL o'rnatilmagan` bilan yiqiladi.
+  Docker da muammo yo'q — o'zgaruvchilarni `docker-compose.yml` ning
+  `environment:` bo'limi beradi. Konteynersiz sinash kerak bo'lsa:
+  `node --env-file=.env` yoki `npx tsx --env-file=.env worker/index.ts`.

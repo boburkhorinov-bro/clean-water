@@ -1,5 +1,5 @@
 import type { Locale } from '@/generated/prisma/client';
-import { TelegramRateLimitError } from './notify-manager';
+import { buildTelegramError } from './notify-manager';
 
 /**
  * Telegram Bot API ning mijozga xabar yuborish qismi (§4.6).
@@ -36,12 +36,17 @@ function requireToken(): string {
   return token;
 }
 
-async function rateLimitOf(response: Response): Promise<TelegramRateLimitError> {
-  const body = (await response.json().catch(() => null)) as {
-    parameters?: { retry_after?: number };
-  } | null;
-
-  return new TelegramRateLimitError(body?.parameters?.retry_after ?? 30);
+/**
+ * Telegram javobidan xato quradi — sababi bilan birga.
+ *
+ * Sabab shu yerdan `notifications.error` ustuniga tushadi. Faqat status kodi
+ * yozilsa, satr har kuni qayta olinadi va nima uchun yetib bormayotgani hech
+ * qachon aniqlanmaydi: mijoz botni bloklaganmi, chat o'chganmi, token
+ * bekor qilinganmi — hammasi bir xil `403` ko'rinadi.
+ */
+async function errorOf(response: Response, method: string): Promise<Error> {
+  const body: unknown = await response.json().catch(() => null);
+  return buildTelegramError(response.status, body, method);
 }
 
 export interface SendBotMessageInput {
@@ -66,11 +71,10 @@ export async function sendBotMessage(input: SendBotMessageInput): Promise<void> 
     }),
   });
 
-  if (response.status === 429) {
-    throw await rateLimitOf(response);
-  }
   if (!response.ok) {
-    throw new Error(`Telegram sendMessage ${response.status}`);
+    // 429 ham shu yerdan o'tadi: `buildTelegramError` uni `retry_after` ni
+    // olib yuruvchi alohida xatoga aylantiradi va o'tish uni hurmat qiladi.
+    throw await errorOf(response, 'sendMessage');
   }
 }
 
@@ -99,6 +103,6 @@ export async function answerCallbackQuery(input: AnswerCallbackInput): Promise<v
   });
 
   if (!response.ok) {
-    throw new Error(`Telegram answerCallbackQuery ${response.status}`);
+    throw await errorOf(response, 'answerCallbackQuery');
   }
 }
