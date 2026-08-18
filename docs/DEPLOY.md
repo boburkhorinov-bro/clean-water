@@ -39,10 +39,22 @@ ko'tarilmaydi** — `src/server/env.ts` startda tekshiradi:
 | `POSTGRES_PASSWORD` | `DATABASE_URL` dagi parol bilan bir xil |
 | `JWT_SECRET` | `openssl rand -base64 48`. Kamida 32 belgi |
 | `TELEGRAM_BOT_TOKEN` | @BotFather bergan token |
-| `TELEGRAM_MANAGER_CHAT_ID` | Arizalar tushadigan guruh |
+| `TELEGRAM_MANAGER_CHAT_ID` | Arizalar tushadigan guruh — ID **manfiy** (pastga qarang) |
 | `TELEGRAM_WEBHOOK_SECRET` | `openssl rand -hex 32`. Bo'sh bo'lsa webhook hamma so'rovni 401 qiladi |
 | `TELEGRAM_ADMIN_IDS` | Bootstrap adminlar, vergul bilan |
 | `NEXT_PUBLIC_SITE_URL` | `https://<domen>` — **prodda HTTPS shart, va u QURISHDAN OLDIN kerak** (pastga qarang) |
+
+### `TELEGRAM_MANAGER_CHAT_ID` — guruh, shaxsiy chat emas
+
+Guruh ID si har doim **manfiy** (`-100...` yoki `-...`). Musbat son — bu
+shaxsiy chat, va oqibati ikki xil bo'ladi: arizani faqat bitta odam ko'radi,
+«Ishga olish» tugmasi jamoaviy ishlamaydi; agar o'sha odam botga hech qachon
+`/start` yozmagan bo'lsa, Telegram `403` qaytaradi va xabar umuman ketmaydi
+(ariza baribir bazada qoladi — u avval yoziladi, xabar keyin).
+
+ID ni olish: guruhga @getidsbot ni qo'shing → u ID ni yozadi → botni
+chiqaring. **Bot guruhda administrator bo'lishi shart**, aks holda xabar
+yubora olmaydi.
 
 ### `NEXT_PUBLIC_SITE_URL` — obrazni qurishdan oldin
 

@@ -390,6 +390,14 @@ MVP ga kirmaydi (§2). Menyuda ko'rsatilmaydi — «tez orada» zaglushkalari yo
 - **Baza ishlayapti, lekin Docker siz va xizmat sifatida emas.** Har safar ishni
   boshlashdan oldin postgres ni qo'lda ko'tarish kerak — buyruqlar `.ralph/AGENT.md`
   dagi «Lokal baza» bo'limida. `docker compose up` hamon sinalmagan.
+- **Integratsiya to'plami muhit tebranishiga sezgir.** Bir marta `npm run test:int`
+  barcha 21 faylni «Vitest failed to find the runner» bilan yiqitgan (setup
+  bosqichida, bitta ham test ishlamasdan) — xotira bosimi, kod emas: darhol
+  qayta ishga tushirilganda 251/251 o'tgan. Yiqilgan test haqida xulosa
+  chiqarishdan oldin uni ALOHIDA ishga tushiring.
+  Zaxira testlari (`scripts/backup.int.test.ts`) tashqi jarayonlarga
+  (`pg_dump`/`pg_restore`) tayanadi va shu sababli o'z timeout iga ega —
+  konfigdagi umumiy 30 s ular uchun yetmaydi.
 - **`.env` yaratilgan** (2026-08-16, `env.example` dan) — `DATABASE_URL` ni endi
   har buyruqda qo'lda berish shart emas. `JWT_SECRET` va
   `TELEGRAM_WEBHOOK_SECRET` CSPRNG (`crypto.randomBytes`) bilan generatsiya
@@ -398,14 +406,19 @@ MVP ga kirmaydi (§2). Menyuda ko'rsatilmaydi — «tez orada» zaglushkalari yo
   `DATABASE_URL` da host `127.0.0.1`, **`localhost` emas**: Windows da u avval
   `::1` ga hal bo'ladi va postgres uni tinglamaydi.
   Telegram qiymatlari (bot tokeni, `TELEGRAM_ADMIN_IDS`,
-  `TELEGRAM_MANAGER_CHAT_ID`) bo'sh — ular loyiha egasida.
+  `TELEGRAM_MANAGER_CHAT_ID`) **to'ldirilgan** (2026-08-18) va haqiqiy hisob
+  bilan tekshirilgan; menejerlar guruhi ID si manfiy, bot unda administrator.
+  To'ldirilmagan yagona qiymat — `NEXT_PUBLIC_SITE_URL` (hamon
+  `http://localhost:3000`), u domen tanlangach yoziladi va **qurish paytida**
+  kerak bo'ladi.
   **Namuna fayli nuqtasiz — `env.example`.** Ilgari ildizda `.env.example`
   nomli bo'sh KATALOG turgan va undan nusxalash `.env` ni ham bo'sh katalog
   qilib qo'ygan; ikkalasi olib tashlandi.
   **Ruxsat sozlamalari `.env` ni O'QISHNI taqiqlaydi** (`Read(.env)`,
   `Read(.env.*)`), yozishni emas.
-  **TASDIQLANDI**: 355 birlik + 251 integratsiya testi o'tdi, ishga tushirilgan
-  ilovada `/api/health` 200, `/uz` 200, `/` → 307 `/uz`.
+  **TASDIQLANDI** (2026-08-18): 370 birlik + 251 integratsiya testi o'tdi,
+  lint va typecheck toza, ishga tushirilgan ilovada `/api/health` 200,
+  `/uz` 200, `/` → 307 `/uz`.
 - **Versiya cheklovlari** `.ralph/AGENT.md` da — TypeScript 6.x va ESLint 9.x
   ataylab `latest` emas. Ko'tarmang, lint buziladi.
 - To'liq TZ: `.ralph/specs/requirements.md` (ildizdagi `spec.md` bilan sinxron;

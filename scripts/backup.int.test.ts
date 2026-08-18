@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, rmSync, utimesSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterAll, beforeEach, describe, expect, test } from 'vitest';
+import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { prisma } from '@/server/db';
 import { resetDatabase } from '@/test/db-helpers';
 
@@ -19,6 +19,14 @@ import { resetDatabase } from '@/test/db-helpers';
  * Testlar `cleanwater_test` bazasida ishlaydi (`src/test/int-setup.ts` buni
  * majburlaydi) — ishlab chiqish ma'lumotiga tegilmaydi.
  */
+// Har bir `verify-restore.sh` chaqiruvi to'rtta tashqi jarayon ishga tushiradi
+// (`pg_dump`, `CREATE DATABASE`, `pg_restore`, `DROP DATABASE`). Bo'sh
+// mashinada bu ~15 s, ya'ni konfigdagi umumiy 30 s limitning yarmi — zaxira
+// qolmaydi. To'liq to'plam ketma-ket ishlaganda o'sha test 61 s gacha
+// cho'zilgan va YOLG'ON yiqilgan (2026-08-18). Bu yerdagi da'vo tiklash
+// TEZLIGI emas, tiklash BO'LISHI haqida, shuning uchun limit muhit
+// tebranishini qoplaydigan darajada olinadi.
+vi.setConfig({ testTimeout: 120_000 });
 
 const scriptsDir = fileURLToPath(new URL('.', import.meta.url));
 const backupDir = join(tmpdir(), `cw-backup-test-${process.pid}`);

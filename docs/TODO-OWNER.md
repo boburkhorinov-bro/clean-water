@@ -1,6 +1,7 @@
 # Loyiha egasi bajaradigan ishlar
 
-Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 611 test o'tadi. Pastdagilar —
+Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 621 test o'tadi (370 birlik +
+251 integratsiya, 2026-08-18 da tekshirilgan). Pastdagilar —
 faqat siz bajara oladigan ishlar: ular tashqi hisoblar, pul, jismoniy
 qurilmalar yoki biznes qarorlarini talab qiladi.
 
@@ -10,7 +11,7 @@ Tartib muhim: yuqoridagi bloklar pastdagilarni bloklaydi.
 
 ## 1. Hozir `.env` da tuzatish kerak
 
-Fayl mavjud va deyarli to'liq. Uchta muammo qoldi.
+Fayl mavjud va deyarli to'liq. Ikkita muammo qoldi.
 
 - [ ] **`NEXT_PUBLIC_SITE_URL`** — hozir `http://localhost:3000`.
       Haqiqiy `https://<domen>` bo'lishi shart.
@@ -19,21 +20,22 @@ Fayl mavjud va deyarli to'liq. Uchta muammo qoldi.
       ([DEPLOY.md §2](DEPLOY.md)). Docker build noto'g'ri qiymatda
       ataylab to'xtaydi.
 
-- [ ] **`TELEGRAM_MANAGER_CHAT_ID`** — hozir **musbat** 9 xonali son, ya'ni
-      shaxsiy chat. Guruh ID si har doim manfiy (`-100...`).
-      Oqibati: arizani faqat bitta odam ko'radi, «Ishga olish» tugmasi
-      jamoaviy ishlamaydi. Bundan tashqari, agar o'sha odam botga hech qachon
-      `/start` yozmagan bo'lsa, Telegram `403` qaytaradi va xabar umuman
-      ketmaydi (ariza baribir bazada qoladi).
-      Guruh ID sini olish: guruhga @getidsbot ni qo'shing → u ID ni yozadi →
-      botni chiqaring.
-
 - [ ] **`POSTGRES_PASSWORD`** — hozir `cleanwater` (ishlab chiqish uchun).
       Prodda kuchli parol qo'ying va uni `DATABASE_URL` ichiga ham yozing —
       ikki joyda bir xil bo'lishi shart.
       Parolni **hex** da yarating, base64 da emas: base64 dagi `+` va `/`
       belgilar ulanish satrini buzadi.
       `openssl rand -hex 18`
+
+**Telegram sozlamalari tugallangan** (2026-08-18): bot tokeni, admin ID lar va
+menejerlar guruhi `.env` da, guruh ID si manfiy, bot unda administrator.
+Haqiqiy hisob bilan tekshirilgan: sinov arizasi guruhga yetib bordi, eslatma
+mijozga ketdi (idempotentligi ham). Prodda boshqa guruh ishlatilsa, ID
+qoidasi — [DEPLOY.md §2](DEPLOY.md) jadvalida.
+
+Qolgan ikkita Telegram zanjiri **domensiz sinab bo'lmaydi**: bot webhooki
+(«Almashtirishga buyurtma» tugmasi) va Mini App avtorizatsiyasi — ikkalasi
+ham public HTTPS manzilni talab qiladi.
 
 ---
 
