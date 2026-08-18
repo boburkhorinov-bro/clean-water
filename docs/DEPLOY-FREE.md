@@ -98,6 +98,106 @@ Ikkinchi yo'l bilan boshlab, keyin domenga o'tish mumkin — lekin
 ([DEPLOY.md §2](DEPLOY.md) ga qarang), va eski manzilga qo'yilgan qidiruv
 indeksini ko'chirish kerak bo'ladi.
 
+## Amaliy qadamlar: Oracle + DuckDNS
+
+Bu bo'lim [DEPLOY.md](DEPLOY.md) dan **oldin** bajariladigan ishlarni
+tavsiflaydi: u yerda «Ubuntu li VPS tayyor» deb boshlanadi, mana shu bo'lim
+o'sha VPS ni bepul qilib beradi. Oxirida siz DEPLOY.md §2 ga o'tasiz.
+
+**Tartib muhim:** subdomen → instans → portlar → DNS → Docker → DEPLOY.md.
+
+### 1. DuckDNS subdomeni (~5 daqiqa, kartasiz)
+
+1. [duckdns.org](https://www.duckdns.org) → GitHub/Google bilan kiring.
+2. Nom tanlang (masalan `cleanwater`) → `cleanwater.duckdns.org` beriladi.
+3. **Tokenni saqlang** — u IP ni yangilash uchun kerak.
+
+IP ni hozir kiritmang: instans hali yo'q. Bu 4-qadamda qilinadi.
+
+### 2. Oracle instansi
+
+Shape: **Ampere A1 (`VM.Standard.A1.Flex`)**, `x86` emas — bepul limit
+faqat ARM da mo'l. Darhol **2 OCPU / 12 GB** doirasida qoling: 2026-yil
+iyunidan keyin undan yuqorisi bepul emas va instans o'chirilishi mumkin.
+
+Obraz: **Ubuntu 24.04 (aarch64)**.
+
+SSH kaliti: yaratishda **ochiq kalitni yuklang** — Oracle parol bilan kirishni
+yoqmaydi. Kalit bo'lmasa avval yarating:
+
+```bash
+ssh-keygen -t ed25519 -C "cleanwater"
+cat ~/.ssh/id_ed25519.pub   # shuni Oracle ga joylashtiring
+```
+
+**Kutilgan to'siq: «Out of host capacity».** Bepul ARM quvvati ko'p
+regionlarda band va bu xato oddiy hol — hisobingizda muammo yo'q. Chorasi:
+boshqa availability domain ni sinang, yoki bir necha soatdan keyin qayta
+uring. Region ni **birinchi tanlashda** o'zingizga yaqinini oling: u keyin
+o'zgarmaydi.
+
+### 3. Portlarni ochish — IKKI joyda
+
+Bu Oracle ning eng ko'p vaqt yeydigan tuzog'i: 80/443 **ikki qatlamda**
+yopiq turadi va faqat bittasini ochish yetarli emas. Sayt «ochilmayapti»
+deyilganda sabab deyarli har doim shu.
+
+**a) VCN Security List** (Oracle konsolida): instans → VCN → Security List →
+Ingress Rules ga ikkita qoida qo'shing — `0.0.0.0/0`, TCP, portlar `80` va
+`443`.
+
+**b) Instansning o'zidagi iptables**: Oracle ning Ubuntu obrazi standart
+holatda faqat 22-portni o'tkazadi.
+
+```bash
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+sudo netfilter-persistent save
+```
+
+`netfilter-persistent save` ni **o'tkazib yubormang** — usiz qoidalar
+serverni qayta yuklaganda yo'qoladi va sayt sababsiz «o'chib qoladi».
+
+### 4. DuckDNS ni instans IP siga qaratish
+
+Oracle bergan public IP ni DuckDNS panelidagi maydonga yozing va `update`
+bosing. Tekshirish:
+
+```bash
+nslookup cleanwater.duckdns.org   # instans IP sini qaytarishi kerak
+```
+
+DNS tarqalishini kuting — DuckDNS da bu odatda bir necha daqiqa. **TLS ga
+shu tekshiruvdan oldin o'tmang**: Let's Encrypt domenni HTTP orqali
+tekshiradi va DNS hali eski bo'lsa sertifikat berilmaydi, ko'p urinish esa
+soatlik limitga tushiradi.
+
+### 5. Docker
+
+```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
+sudo usermod -aG docker $USER
+```
+
+`usermod` dan keyin **SSH sessiyasini yopib qaytadan kiring** — aks holda
+guruh a'zoligi kuchga kirmaydi va har `docker` buyrug'i `sudo` talab qiladi.
+
+Tekshirish: `docker run --rm hello-world`.
+
+### 6. Keyin — DEPLOY.md
+
+Shu paytdan boshlab hamma narsa [DEPLOY.md](DEPLOY.md) §2 bo'yicha ketadi.
+Bitta farq: `.env` da
+
+```
+NEXT_PUBLIC_SITE_URL="https://cleanwater.duckdns.org"
+```
+
+va bu qiymat **obrazni qurishdan oldin** turishi shart (DEPLOY.md §2).
+
+Build ni serverda qilish: 12 GB da Next.js build sig'adi, lekin u ~1.5 GB
+yeydi va ARM da sekinroq ketadi. Birinchi build uchun sabr qiling.
+
 ## Nimani hisobga olish kerak
 
 - **SLA yo'q.** Oracle bepul instansni ogohlantirmasdan o'chirishi mumkin.

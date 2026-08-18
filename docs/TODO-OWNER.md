@@ -41,16 +41,21 @@ ham public HTTPS manzilni talab qiladi.
 
 ## 2. Infratuzilma
 
-- [ ] **Domen.** Yagona muqarrar xarajat (~10–15 $/yil).
-      Bepul muqobil — DuckDNS kabi subdomen, lekin `cleanwater.duckdns.org`
-      mijozda ishonch uyg'otmaydi. Tafsilot: [DEPLOY-FREE.md](DEPLOY-FREE.md).
+**Qaror (2026-08-18): nol byudjet yo'li.** Sotuv asosan Telegram orqali
+bo'lgani uchun bepul subdomen yetarli — mijoz manzilni ko'rmaydi ham.
+Bosqichma-bosqich tartib: [DEPLOY-FREE.md](DEPLOY-FREE.md) «Amaliy qadamlar».
 
-- [ ] **Server.** Byudjet nol bo'lsa — Oracle Cloud Always Free
-      (2 OCPU / 12 GB ARM). Mavjud `docker-compose.yml` o'zgarishsiz ishlaydi,
-      ARM mosligi tekshirilgan. Ro'yxatdan o'tishda karta so'raladi (pul
-      yechilmaydi).
+- [ ] **Bepul subdomen** — DuckDNS da nom oling (kartasiz, ~5 daqiqa).
+      Let's Encrypt unga sertifikat beradi, Mini App to'liq ishlaydi.
+      Keyinchalik o'z domeningizga o'tsangiz obrazni **qayta qurish** shart.
+
+- [ ] **Server** — Oracle Cloud Always Free (2 OCPU / 12 GB ARM).
+      Mavjud `docker-compose.yml` o'zgarishsiz ishlaydi, ARM mosligi
+      tekshirilgan. Ro'yxatdan o'tishda karta so'raladi (pul yechilmaydi).
       **Diqqat:** Oracle 2026-yil iyunida limitni ikki barobar qisqartirgan;
       yangi instansni darhol 2/12 doirasida yarating.
+      «Out of host capacity» — kutilgan xato, hisobda muammo emas:
+      boshqa availability domain yoki keyinroq qayta urinish.
 
 - [ ] **YaTT yoki yuridik shaxs** — to'lov yo'q bo'lsa ham, biznes sifatida
       ishlash uchun.
