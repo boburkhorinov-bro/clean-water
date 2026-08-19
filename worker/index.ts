@@ -1,6 +1,9 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { checkProcessEnv } from '@/server/env';
-import { runReminderSweep } from '@/server/services/reminder-sweep';
+import {
+  runReminderSweep,
+  type ReminderSweepResult,
+} from '@/server/services/reminder-sweep';
 import { requestReplacement } from '@/server/services/replacement-request';
 import { savePhoneForTelegramUser } from '@/server/services/save-phone';
 import {
@@ -11,6 +14,7 @@ import {
 } from '@/server/telegram/bot-api';
 import { handleTelegramUpdate } from './bot/webhook';
 import { startDailyJob } from './jobs/schedule';
+import { handleReminderTrigger } from './jobs/trigger';
 
 /**
  * `worker` konteynerining kirish nuqtasi (§4.1, §4.6).
@@ -28,10 +32,18 @@ import { startDailyJob } from './jobs/schedule';
 const REMINDER_HOUR = 9;
 const DEFAULT_PORT = 8081;
 const WEBHOOK_PATH = '/telegram/webhook';
+/**
+ * Eslatmalarni tashqaridan ishga tushirish (§4.6).
+ *
+ * Bepul hostingda jarayon bekorchilikdan keyin uxlaydi va ichidagi kunlik
+ * taymer umuman ishlamaydi. Tashqi cron xizmati shu manzilga so'rov yuboradi:
+ * so'rov konteynerni uyg'otadi va o'tishni boshlaydi.
+ */
+const REMINDERS_PATH = '/jobs/reminders';
 /** Telegram updatelari kichik; kattaroq tanani o'qishning hojati yo'q. */
 const MAX_BODY_BYTES = 64 * 1024;
 
-async function sweep(): Promise<void> {
+async function sweep(): Promise<ReminderSweepResult> {
   const result = await runReminderSweep({
     send: async (target) => {
       await sendBotMessage({
@@ -47,6 +59,10 @@ async function sweep(): Promise<void> {
       `xato=${result.failed}` +
       (result.rateLimited ? ` (429, retry_after=${result.retryAfterSeconds})` : ''),
   );
+
+  // Natija tashqi cron chaqiruviga ham qaytariladi: u javob tanasida
+  // ko'rinsa, egasi eslatmalar haqiqatan ketayotganini tekshira oladi.
+  return result;
 }
 
 function readBody(request: IncomingMessage): Promise<string> {
@@ -73,6 +89,17 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   if (request.method === 'GET' && request.url === '/health') {
     response.writeHead(200, { 'Content-Type': 'text/plain' });
     response.end('ok');
+    return;
+  }
+
+  if (request.method === 'POST' && request.url === REMINDERS_PATH) {
+    const result = await handleReminderTrigger(
+      { authorization: headerOf(request, 'authorization') },
+      { secret: process.env.CRON_SECRET, runSweep: sweep },
+    );
+
+    response.writeHead(result.status, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify(result.body));
     return;
   }
 
@@ -120,9 +147,18 @@ function main(): void {
   // bu eng yomon nosozlik turi, chunki u sog'lom ko'rinadi.
   checkProcessEnv('worker');
 
-  const port = Number(process.env.WORKER_PORT ?? DEFAULT_PORT);
+  // `PORT` — PaaS larning (Render, Railway) standarti; ular portni o'zi
+  // tanlaydi va boshqa portda tinglagan xizmat «ishga tushmadi» deb
+  // hisoblanadi. `WORKER_PORT` Docker uchun qoladi.
+  const port = Number(process.env.PORT ?? process.env.WORKER_PORT ?? DEFAULT_PORT);
 
-  const job = startDailyJob({ hour: REMINDER_HOUR, run: sweep });
+  // Rejalashtiruvchi natijani ishlatmaydi — u faqat o'tishni chaqiradi.
+  const job = startDailyJob({
+    hour: REMINDER_HOUR,
+    run: async () => {
+      await sweep();
+    },
+  });
   console.log(`[worker] eslatmalar rejalashtiruvchisi: har kuni ${REMINDER_HOUR}:00 (Toshkent)`);
 
   const server = createServer((request, response) => {

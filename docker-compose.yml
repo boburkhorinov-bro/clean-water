@@ -112,6 +112,10 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_MANAGER_CHAT_ID: ${TELEGRAM_MANAGER_CHAT_ID}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
+      # Eslatmalarni tashqaridan ishga tushirish (§4.6). Docker da ichki
+      # rejalashtiruvchi ham ishlaydi, lekin manzil qo'lda tekshirish uchun
+      # ochiq turadi va sirsiz u 401 qaytaradi.
+      CRON_SECRET: ${CRON_SECRET}
       WORKER_PORT: ${WORKER_PORT:-8081}
       DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
       TZ: ${TZ:-Asia/Tashkent}

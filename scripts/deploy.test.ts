@@ -27,6 +27,27 @@ const compose = read('docker-compose.yml');
 const dockerfile = read('Dockerfile');
 const deployScript = read('scripts/deploy.sh');
 const deployDoc = read('docs/DEPLOY.md');
+const nextConfig = read('next.config.ts');
+
+/**
+ * `output: 'standalone'` faqat Docker uchun kerak — PaaS o'z chiqishini
+ * yasaydi. Kelishuv ikki faylda: `next.config.ts` belgini o'qiydi,
+ * `Dockerfile` uni beradi.
+ *
+ * Ajralib qolsa build JIMGINA boshqacha chiqadi: `runner` bosqichi
+ * `.next/standalone` ni topa olmaydi va obraz qurilmaydi.
+ */
+describe('standalone build belgisi', () => {
+  test('next.config uni `BUILD_TARGET` ga bog‘laydi', () => {
+    expect(nextConfig).toMatch(/BUILD_TARGET === 'docker'/);
+    expect(nextConfig).toMatch(/output: 'standalone'/);
+  });
+
+  test('Dockerfile belgini build dan OLDIN beradi', () => {
+    const beforeBuild = dockerfile.slice(0, dockerfile.indexOf('npm run build'));
+    expect(beforeBuild).toMatch(/ENV BUILD_TARGET=docker/);
+  });
+});
 
 describe('migratsiyalar qayerda ishlaydi', () => {
   /**

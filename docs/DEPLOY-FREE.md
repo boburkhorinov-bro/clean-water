@@ -1,5 +1,11 @@
 # Clean Water — nol byudjet bilan ishga tushirish
 
+> **HOLAT (2026-08-20): bu variant tanlanmadi.** Egasi Vercel + Render + Neon
+> yo'lini tanladi — [DEPLOY-PAAS.md](DEPLOY-PAAS.md). Pastdagi tahlil kuchda
+> qoladi va Docker/VPS ga qaytish kerak bo'lsa ishlatiladi; xususan Vercel
+> Hobby haqidagi ogohlantirish ham o'z kuchida (u yerda tijoriy foydalanish
+> shartlarda taqiqlangan).
+
 Bu hujjat [DEPLOY.md](DEPLOY.md) ni almashtirmaydi — u **qayerga** qo'yishni
 tanlashga yordam beradi. Texnik tartib o'sha-o'sha: `docker compose up -d`.
 

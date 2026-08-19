@@ -35,6 +35,11 @@ RUN case "$NEXT_PUBLIC_SITE_URL" in \
          exit 1 ;; \
     esac
 
+# `next.config.ts` shu belgiga qarab `output: 'standalone'` ni yoqadi.
+# Usiz build oddiy `.next` chiqishini beradi va `runner` bosqichi
+# `.next/standalone` ni topa olmasdan yiqiladi.
+ENV BUILD_TARGET=docker
+
 RUN npx prisma generate && npm run build
 
 # Migratsiyalar va seed uchun bosqich.

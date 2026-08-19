@@ -55,7 +55,17 @@ const REQUIRED_IN_PRODUCTION: Record<Service, string[]> = {
   web: ['JWT_SECRET', 'TELEGRAM_BOT_TOKEN', 'NEXT_PUBLIC_SITE_URL'],
   // `worker` sessiya bermaydi, lekin webhook va menejerlar guruhisiz keraksiz:
   // arizalar bazaga tushadi va hech kim ularni ko'rmaydi.
-  worker: ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_WEBHOOK_SECRET', 'TELEGRAM_MANAGER_CHAT_ID'],
+  //
+  // `CRON_SECRET` shu ro'yxatda, chunki eslatmalarni tashqi cron ishga
+  // tushiradi: bepul hostingda jarayon bekorchilikdan keyin uxlaydi va
+  // ichidagi taymer umuman ishlamaydi. Sirsiz o'sha manzil butunlay yopiq —
+  // eslatmalar hech qachon ketmaydi va log da bitta ham xato ko'rinmaydi.
+  worker: [
+    'TELEGRAM_BOT_TOKEN',
+    'TELEGRAM_WEBHOOK_SECRET',
+    'TELEGRAM_MANAGER_CHAT_ID',
+    'CRON_SECRET',
+  ],
 };
 
 /** HS256 kaliti uchun eng kam uzunlik — qisqasi brute-force uchun ochiq. */

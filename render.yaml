@@ -1,0 +1,62 @@
+# Clean Water — `worker` xizmati Render da (§4.1, §4.6).
+#
+# Bu fayl Render Blueprint: repozitoriyni ulaganda xizmat shu tavsifdan
+# yaratiladi. Sayt bu yerda EMAS — u Vercel da, baza esa Neon da.
+#
+# `worker` nima qiladi:
+#   - Telegram bot webhooki (`/telegram/webhook`);
+#   - kartrij eslatmalari o'tishi (`/jobs/reminders`, tashqi cron chaqiradi).
+#
+# BEPUL REJANING QOIDASI: xizmat 15 daqiqa bekorchilikdan keyin uxlaydi va
+# birinchi so'rov uni ~1 daqiqada uyg'otadi. Oqibatlari:
+#
+#   - Jarayon ichidagi kunlik taymerga TAYANIB BO'LMAYDI — uxlab yotgan
+#     konteynerda u ishlamaydi. Shuning uchun eslatmalarni tashqi cron
+#     xizmati ishga tushiradi (docs/DEPLOY-PAAS.md, §4). Taymer kodda
+#     qoladi: ikki marta ishga tushish xavfsiz, chunki idempotentlik
+#     bazadagi unikal indeksda.
+#   - Mijoz «Almashtirishga buyurtma» tugmasini birinchi bosganda javob
+#     kechikishi mumkin. Telegram javob kelmasa updateni qayta yuboradi,
+#     ya'ni ariza yo'qolmaydi — faqat sekinroq keladi.
+
+services:
+  - type: web
+    name: cleanwater-worker
+    runtime: node
+    plan: free
+    # Toshkentga eng yaqin mintaqa.
+    region: frankfurt
+    branch: main
+
+    # `--include=dev` SHART: `tsx` va `prisma` — devDependencies, Render esa
+    # `NODE_ENV=production` beradi va `npm ci` ularni o'tkazib yuboradi.
+    # Usiz `npx tsx` ishga tushish paytida paketni tarmoqdan qidiradi va
+    # xizmat ko'tarilmaydi.
+    buildCommand: npm ci --include=dev && npx prisma generate
+    startCommand: npx tsx worker/index.ts
+
+    # Render shu manzilga so'rov yuborib xizmat tirikligini tekshiradi.
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Eslatmalar Toshkent kalendari bo'yicha hisoblanadi. Kod `TZ` ga
+      # bog'liq emas (siljish `lib/due-date.ts` da), lekin loglardagi vaqt
+      # o'qilishi uchun qo'yiladi.
+      - key: TZ
+        value: Asia/Tashkent
+      # Neon ning POOLED ulanish satri (`-pooler` bilan) — docs/DEPLOY-PAAS.md §3.
+      - key: DATABASE_URL
+        sync: false
+      # Bepul instansda xotira kam va bir vaqtda ko'p so'rov yo'q.
+      - key: DATABASE_POOL_MAX
+        value: '3'
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        sync: false
+      - key: TELEGRAM_MANAGER_CHAT_ID
+        sync: false
+      - key: CRON_SECRET
+        sync: false

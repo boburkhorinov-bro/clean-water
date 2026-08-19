@@ -19,6 +19,7 @@ const validProdEnv = {
   NEXT_PUBLIC_SITE_URL: 'https://cleanwater.uz',
   TELEGRAM_WEBHOOK_SECRET: 'b'.repeat(32),
   TELEGRAM_MANAGER_CHAT_ID: '-1001234567890',
+  CRON_SECRET: 'c'.repeat(32),
 };
 
 describe('assertEnv — web (prod)', () => {
@@ -93,6 +94,17 @@ describe('assertEnv — worker (prod)', () => {
     expect(() => assertEnv({ ...validProdEnv, TELEGRAM_MANAGER_CHAT_ID: '' }, opts)).toThrow(
       /TELEGRAM_MANAGER_CHAT_ID/,
     );
+  });
+
+  /**
+   * Eslatmalarni tashqi cron ishga tushiradi (bepul hostingda jarayon
+   * uxlaydi va ichki taymer ishlamaydi). Sirsiz o'sha manzil butunlay
+   * yopiq — ya'ni eslatmalar hech qachon ketmaydi, log da esa bitta ham
+   * xato ko'rinmaydi. Bu `TELEGRAM_WEBHOOK_SECRET` bilan aynan bir xil
+   * nosozlik turi.
+   */
+  test('cron siri siz ishga tushmaydi', () => {
+    expect(() => assertEnv({ ...validProdEnv, CRON_SECRET: '' }, opts)).toThrow(/CRON_SECRET/);
   });
 
   test('worker uchun JWT_SECRET talab qilinmaydi', () => {

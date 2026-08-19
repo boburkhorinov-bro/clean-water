@@ -1,6 +1,6 @@
 # Loyiha egasi bajaradigan ishlar
 
-Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 688 test o'tadi (418 birlik +
+Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 708 test o'tadi (438 birlik +
 270 integratsiya, 2026-08-19 da tekshirilgan). Pastdagilar —
 faqat siz bajara oladigan ishlar: ular tashqi hisoblar, pul, jismoniy
 qurilmalar yoki biznes qarorlarini talab qiladi.
@@ -58,29 +58,32 @@ Tartib muhim: yuqoridagi bloklar pastdagilarni bloklaydi.
 
 ---
 
-## 1. Hozir `.env` da tuzatish kerak
+## 1. Sirlar
 
-Fayl mavjud va deyarli to'liq. Ikkita muammo qoldi.
+**Qaror (2026-08-20): Vercel + Render + Neon.** Bosqichma-bosqich tartib —
+[DEPLOY-PAAS.md](DEPLOY-PAAS.md).
 
-- [ ] **`NEXT_PUBLIC_SITE_URL`** — hozir `http://localhost:3000`.
-      Haqiqiy `https://<domen>` bo'lishi shart.
-      **Domen tanlanmaguncha obrazni qurib bo'lmaydi** — bu qiymat qurish
-      paytida kodga muhrlanadi, keyin o'zgartirib bo'lmaydi
-      ([DEPLOY.md §2](DEPLOY.md)). Docker build noto'g'ri qiymatda
-      ataylab to'xtaydi.
+Bu yo'lda ildizdagi `.env` faqat **lokal ishlab chiqish** uchun qoladi.
+Prod qiymatlar uchta panelda kiritiladi (Vercel, Render, Neon) va
+repozitoriyga umuman tushmaydi.
 
-- [ ] **`POSTGRES_PASSWORD`** — hozir `cleanwater` (ishlab chiqish uchun).
-      Prodda kuchli parol qo'ying va uni `DATABASE_URL` ichiga ham yozing —
-      ikki joyda bir xil bo'lishi shart.
-      Parolni **hex** da yarating, base64 da emas: base64 dagi `+` va `/`
-      belgilar ulanish satrini buzadi.
-      `openssl rand -hex 18`
+Yaratish kerak bo'lgan sirlar:
+
+- [ ] `JWT_SECRET` — `openssl rand -base64 48` (Vercel)
+- [ ] `TELEGRAM_WEBHOOK_SECRET` — `openssl rand -hex 32` (Render)
+- [ ] `CRON_SECRET` — `openssl rand -hex 32` (Render va cron xizmatida)
+
+- [ ] **`NEXT_PUBLIC_SITE_URL`** — Vercel domeningiz.
+      Bu qiymat **qurish paytida kodga muhrlanadi**: uni keyin
+      o'zgartirsangiz, qayta deploy qilish shart. Aks holda canonical,
+      hreflang, `robots.txt` va `sitemap.xml` eski manzilda qoladi —
+      sayt ishlaydi, buzilish esa faqat qidiruv indeksida ko'rinadi.
 
 **Telegram sozlamalari tugallangan** (2026-08-18): bot tokeni, admin ID lar va
 menejerlar guruhi `.env` da, guruh ID si manfiy, bot unda administrator.
 Haqiqiy hisob bilan tekshirilgan: sinov arizasi guruhga yetib bordi, eslatma
 mijozga ketdi (idempotentligi ham). Prodda boshqa guruh ishlatilsa, ID
-qoidasi — [DEPLOY.md §2](DEPLOY.md) jadvalida.
+qoidasi — [DEPLOY-PAAS.md §5](DEPLOY-PAAS.md).
 
 Qolgan ikkita Telegram zanjiri **domensiz sinab bo'lmaydi**: bot webhooki
 («Almashtirishga buyurtma» tugmasi) va Mini App avtorizatsiyasi — ikkalasi
@@ -90,21 +93,29 @@ ham public HTTPS manzilni talab qiladi.
 
 ## 2. Infratuzilma
 
-**Qaror (2026-08-18): nol byudjet yo'li.** Sotuv asosan Telegram orqali
-bo'lgani uchun bepul subdomen yetarli — mijoz manzilni ko'rmaydi ham.
-Bosqichma-bosqich tartib: [DEPLOY-FREE.md](DEPLOY-FREE.md) «Amaliy qadamlar».
+**Qaror (2026-08-20): Vercel + Render + Neon.** Server boshqarilmaydi,
+domen ham shart emas — Vercel o'z manzilini beradi. Bosqichma-bosqich
+tartib: [DEPLOY-PAAS.md](DEPLOY-PAAS.md).
 
-- [ ] **Bepul subdomen** — DuckDNS da nom oling (kartasiz, ~5 daqiqa).
-      Let's Encrypt unga sertifikat beradi, Mini App to'liq ishlaydi.
-      Keyinchalik o'z domeningizga o'tsangiz obrazni **qayta qurish** shart.
+Oracle + Docker varianti bekor qilinmadi, u [DEPLOY.md](DEPLOY.md) va
+[DEPLOY-FREE.md](DEPLOY-FREE.md) da ishlaydigan holatda qoladi.
 
-- [ ] **Server** — Oracle Cloud Always Free (2 OCPU / 12 GB ARM).
-      Mavjud `docker-compose.yml` o'zgarishsiz ishlaydi, ARM mosligi
-      tekshirilgan. Ro'yxatdan o'tishda karta so'raladi (pul yechilmaydi).
-      **Diqqat:** Oracle 2026-yil iyunida limitni ikki barobar qisqartirgan;
-      yangi instansni darhol 2/12 doirasida yarating.
-      «Out of host capacity» — kutilgan xato, hisobda muammo emas:
-      boshqa availability domain yoki keyinroq qayta urinish.
+- [ ] **Neon** — loyiha yarating (Frankfurt). Ikkita ulanish satri kerak:
+      **pooled** (ilova uchun) va **direct** (migratsiya uchun). Migratsiya
+      pooled satr bilan ishlamaydi — sabab DEPLOY-PAAS.md §1 da.
+
+- [ ] **Vercel** — repozitoriyni import qiling, env larni to'ldiring.
+      **Hobby rejasi shartlarida tijoriy foydalanish taqiqlangan** va bu
+      platforma o'sha ta'rifga tushadi (mahsulot sotiladi, sayt yaratilishi
+      uchun haq to'langan). Hobby bilan ishlash sizning qaroringiz
+      (2026-08-20); xavf — hisob to'xtatilishi. Rasmiy yo'l Pro, $20/oy.
+
+- [ ] **Render** — blueprint dan `worker` xizmatini yarating
+      ([`render.yaml`](../render.yaml)) va panelda sirlarni kiriting.
+
+- [ ] **cron-job.org** — har kuni 04:00 UTC da `POST /jobs/reminders`.
+      **Usiz eslatmalar umuman ketmaydi:** bepul Render xizmati uxlaydi va
+      jarayon ichidagi taymer uxlab yotgan konteynerda ishlamaydi.
 
 - [ ] **YaTT yoki yuridik shaxs** — to'lov yo'q bo'lsa ham, biznes sifatida
       ishlash uchun.
@@ -134,20 +145,20 @@ Hammasi admin panel orqali kiritiladi, kod tegishi shart emas.
 
 ## 4. Deploy
 
-Batafsil tartib — [DEPLOY.md](DEPLOY.md). Cheklist §10 da.
+Batafsil tartib — [DEPLOY-PAAS.md](DEPLOY-PAAS.md), cheklist §7 da.
+Docker/VPS varianti uchun — [DEPLOY.md](DEPLOY.md), cheklist §10 da.
 
-- [ ] `.env` to'ldirilgan, sirlar generatsiya qilingan
-- [ ] `docker compose ps` — barcha xizmatlar `healthy`
-- [ ] Migratsiyalar qo'llangan — `docker compose logs migrate` da xato yo'q
-      (ular `up` da avtomatik ishlaydi, `web` ularni kutadi)
-- [ ] TLS ishlaydi, HTTP → HTTPS, HSTS sarlavhasi bor
-- [ ] `sh scripts/smoke.sh https://<domen>` — 15 tekshiruv o'tadi
-- [ ] Telegram webhook o'rnatilgan (`getWebhookInfo` da xato yo'q)
+- [ ] Neon: migratsiyalar **direct** satr bilan qo'llangan
+- [ ] Vercel: env lar to'ldirilgan, `/api/health` javob beradi
+- [ ] Render: `sync: false` sirlari kiritilgan, `/health` → `ok`
+- [ ] Telegram webhook **worker manziliga** o'rnatilgan
+      (`getWebhookInfo` da xato yo'q)
+- [ ] Mini App BotFather da **Vercel domeniga** ulangan
+- [ ] cron-job.org da ish yaratilgan va qo'lda bir marta sinalgan (javob 200)
 - [ ] Menejerlar guruhiga sinov arizasi keldi
-- [ ] `docker compose logs backup` — birinchi zaxira olindi va tekshirildi
-- [ ] **Zaxiralar serverdan tashqariga nusxalanadi** — bepul serverda bu
-      ayniqsa muhim: SLA yo'q, instans ogohlantirmasdan yo'qolishi mumkin
-- [ ] Sertifikatni yangilash cron da
+- [ ] `sh scripts/smoke.sh https://<sayt>` — tekshiruvlar o'tadi
+- [ ] **Zaxira**: Neon panelidagi tiklash oynasi ko'rildi va bir marta
+      qo'lda dump olindi. Bepul xizmatlarda SLA yo'q.
 
 ---
 
@@ -189,6 +200,10 @@ Bular xato emas, lekin bilib turishingiz kerak:
 
 - **Rate-limit jarayon xotirasida** — `web` bir nechta instansda ishga
   tushsa, amaldagi limit instanslar soniga ko'payadi.
+  **Vercel da bu odatiy hol, istisno emas:** serverless instanslar ko'p va
+  qisqa umrli, ya'ni cheklov deyarli ishlamaydi. nginx dagi `limit_req`
+  qatlami ham PaaS da yo'q. Ariza formasida honeypot va imzolangan forma
+  tokeni qoladi (§6) — ular botlarni to'sadi, oddiy flood ni esa yo'q.
 - **Forma tokeni qayta ishlatilishi mumkin** — bir martalik token umumiy
   holat saqlashni (Redis) talab qilardi, u MVP da yo'q.
 - **Sessiyani darhol bekor qilib bo'lmaydi** — JWT bazada saqlanmaydi,
