@@ -19,15 +19,27 @@ import { resolveLeadClient } from './resolve-client';
  * mijoz odatda CRM da (telefon bilan, o'rnatishi bor) va Mini App da
  * (telegram_id bilan, bo'sh) ikkita yozuv bo'lib turadi. Ikkinchi nusxa
  * mantiq ikkita farqli xatti-harakat degani bo'lardi.
+ *
+ * §6: birlashtirish faqat TASDIQLANGAN raqamda. Botdagi tugma buni beradi,
+ * ilovadagi forma esa yo'q — u yerda mijoz begona raqam yozishi mumkin va
+ * o'sha mijozning yozuvi egallanib ketardi.
  */
 
-export type SavePhoneStatus = 'SAVED' | 'INVALID_PHONE';
+export type SavePhoneStatus = 'SAVED' | 'INVALID_PHONE' | 'PHONE_TAKEN';
 
 export interface SavePhoneInput {
   telegramId: bigint;
   /** Xom qiymat: Telegram `contact.phone_number` yoki forma maydoni. */
   phone: string;
   name?: string | undefined;
+  /**
+   * §6: raqamni Telegram tasdiqlaganmi.
+   *
+   * Botdagi «Raqamni yuborish» tugmasi uchun `true` — raqamni Telegram ning
+   * o'zi yuboradi. Mini App dagi forma uchun `false`: mijoz uni qo'lda
+   * yozadi va begona raqam bo'lishi mumkin.
+   */
+  verified?: boolean | undefined;
 }
 
 export interface SavePhoneResult {
@@ -44,11 +56,19 @@ export async function savePhoneForTelegramUser(input: SavePhoneInput): Promise<S
     return { status: 'INVALID_PHONE' };
   }
 
-  const user = await resolveLeadClient({
+  const { user, phoneTaken } = await resolveLeadClient({
     phone,
     name: input.name,
     telegramId: input.telegramId,
+    verified: input.verified,
   });
+
+  // Raqam boshqa mijozda va tasdiqlanmagan — hech narsa o'zgartirilmadi.
+  // Mijozga «botdagi tugmadan foydalaning» deyiladi: u yerda raqamni
+  // Telegram tasdiqlaydi va birlashtirish ishlaydi.
+  if (phoneTaken) {
+    return { status: 'PHONE_TAKEN' };
+  }
 
   return { status: 'SAVED', user };
 }

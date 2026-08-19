@@ -1,7 +1,7 @@
 # Loyiha egasi bajaradigan ishlar
 
-Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 660 test o'tadi (398 birlik +
-262 integratsiya, 2026-08-19 da tekshirilgan). Pastdagilar —
+Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 671 test o'tadi (401 birlik +
+270 integratsiya, 2026-08-19 da tekshirilgan). Pastdagilar —
 faqat siz bajara oladigan ishlar: ular tashqi hisoblar, pul, jismoniy
 qurilmalar yoki biznes qarorlarini talab qiladi.
 
@@ -10,12 +10,39 @@ talab qilmaydi):
 
 - Telefonsiz Mini App mijozi boshi berk ko'chada qolmaydi: botda
   «Raqamni yuborish» tugmasi (`request_contact` — raqamni Telegram o'zi
-  beradi) va «Mening filtrim» ekranida forma. Raqam kiritilgach mijozning
-  CRM dagi yozuvi bilan avtomatik birlashadi.
+  beradi), botda `/start`, va «Mening filtrim» ekranida forma.
   **Deployda diqqat:** `setWebhook` da `allowed_updates` ichida `message`
   bo'lishi shart, aks holda kontakt botga yetib bormaydi
   ([DEPLOY.md §5](DEPLOY.md)) — `scripts/deploy.sh` buni o'zi qiladi.
+- **Hisobni egallab olish yo'li yopildi** (quyida batafsil).
 - Mahsulot sahifalari ISR ga o'tkazildi (yuklama ostida ~5 barobar sekin edi).
+
+### Menejerlar bilishi kerak: raqam qachon birlashadi
+
+Ilgari telefon raqami shaxsni aniqlashning yagona kaliti edi va bu hisobni
+egallab olish yo'li bo'lgan: Telegram orqali kirgan istalgan odam ariza
+formasiga boshqa mijozning raqamini yozsa, o'sha mijozning o'rnatishlari
+(manzili bilan), arizalari va eslatmalari unga ko'chib o'tardi, mijozning
+yozuvi esa o'chib ketardi. Raqamni bilish qiyin emas.
+
+Endi ikkita yozuvni birlashtirish faqat raqam **tasdiqlangan** bo'lsa
+bajariladi:
+
+| Raqam qayerdan keldi | Birlashtiradimi |
+|---|---|
+| Botdagi «Raqamni yuborish» tugmasi | ha — raqamni Telegram beradi |
+| CRM (menejer kiritadi) | ha — ortida qo'ng'iroq va haqiqiy odam |
+| Sayt/Mini App formasi (qo'lda yozilgan) | **yo'q** |
+
+Amalda bu nimani anglatadi:
+
+- **Ariza hech qachon yo'qolmaydi.** Qo'lda yozilgan raqam boshqa mijozniki
+  bo'lsa ham ariza yaratiladi va raqam unda ko'rinadi — siz uni ko'rasiz va
+  kerak bo'lsa CRM da qo'lda birlashtirasiz.
+- **Mijoz «Mening filtrim» ni bo'sh ko'rsa**, uning Telegram yozuvi CRM
+  yozuvidan ajralgan. Yechim: mijoz botga `/start` yuboradi va raqamini
+  tugma orqali jo'natadi — shundan keyin ikkalasi birlashadi.
+- CRM da o'rnatish yozayotganda raqamni to'g'ri kiritish avvalgidek muhim.
 
 Tartib muhim: yuqoridagi bloklar pastdagilarni bloklaydi.
 

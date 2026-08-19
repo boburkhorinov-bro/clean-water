@@ -45,6 +45,8 @@ const updateSchema = z.object({
           language_code: z.string().optional(),
         })
         .optional(),
+      /** `/start` — raqamni tasdiqlashning ochiq eshigi (pastga qarang). */
+      text: z.string().optional(),
       contact: z
         .object({
           phone_number: z.string(),
@@ -78,6 +80,8 @@ export interface WebhookDeps {
     telegramId: bigint;
     phone: string;
     name?: string | undefined;
+    /** §6: raqamni Telegram tasdiqlagani — birlashtirishga ruxsat. */
+    verified: boolean;
   }) => Promise<{ status: SavePhoneStatus }>;
   /**
    * `requestContact` — xabarga «Raqamni yuborish» klaviaturasini ulaydi.
@@ -103,7 +107,9 @@ type ReplyKey =
   | 'PHONE_SAVED'
   | 'PHONE_FOREIGN'
   | 'PHONE_INVALID'
-  | 'PHONE_ERROR';
+  | 'PHONE_TAKEN'
+  | 'PHONE_ERROR'
+  | 'START';
 
 const REPLIES: Record<'uz' | 'ru', Record<ReplyKey, string>> = {
   uz: {
@@ -121,7 +127,13 @@ const REPLIES: Record<'uz' | 'ru', Record<ReplyKey, string>> = {
     PHONE_FOREIGN:
       'Bu raqam sizniki emas. Iltimos, «Raqamni yuborish» tugmasidan foydalaning.',
     PHONE_INVALID: 'Raqamni o‘qib bo‘lmadi. Kutilgan ko‘rinish: +998 XX XXX XX XX.',
+    PHONE_TAKEN: 'Bu raqam boshqa mijozda ro‘yxatdan o‘tgan. Menejer bilan bog‘laning.',
     PHONE_ERROR: 'Raqam saqlanmadi. Birozdan so‘ng qayta urinib ko‘ring.',
+    START:
+      'Clean Water botiga xush kelibsiz.\n' +
+      'Bu yerda kartrij almashtirish muddati haqida eslatma keladi.\n\n' +
+      'Menejer siz bilan bog‘lana olishi uchun raqamingizni yuboring — ' +
+      'quyidagi tugmani bosing.',
   },
   ru: {
     CREATED: 'Заявка принята. Менеджер скоро свяжется с вами.',
@@ -136,8 +148,21 @@ const REPLIES: Record<'uz' | 'ru', Record<ReplyKey, string>> = {
       'Номер сохранён.\n' + 'Теперь нажмите кнопку «Заказать замену» в напоминании ещё раз.',
     PHONE_FOREIGN: 'Это не ваш номер. Воспользуйтесь кнопкой «Отправить номер».',
     PHONE_INVALID: 'Не удалось распознать номер. Ожидаемый вид: +998 XX XXX XX XX.',
+    PHONE_TAKEN: 'Этот номер уже зарегистрирован на другого клиента. Свяжитесь с менеджером.',
     PHONE_ERROR: 'Номер не сохранён. Попробуйте чуть позже.',
+    START:
+      'Добро пожаловать в бот Clean Water.\n' +
+      'Здесь приходят напоминания о замене картриджей.\n\n' +
+      'Чтобы менеджер мог связаться с вами, отправьте свой номер — ' +
+      'нажмите кнопку ниже.',
   },
+};
+
+/** Servis natijasi → javob matni. */
+const SAVE_PHONE_REPLIES: Record<SavePhoneStatus, ReplyKey> = {
+  SAVED: 'PHONE_SAVED',
+  INVALID_PHONE: 'PHONE_INVALID',
+  PHONE_TAKEN: 'PHONE_TAKEN',
 };
 
 function replyLocale(languageCode: string | undefined): 'uz' | 'ru' {
@@ -205,6 +230,41 @@ async function handleCallback(query: CallbackQuery, deps: WebhookDeps): Promise<
   }
 }
 
+/**
+ * `/start` — tasdiqlangan raqamning ochiq eshigi (§6).
+ *
+ * Kontakt tugmasi eslatma xabarida ham bor, lekin eslatma faqat o'rnatishi
+ * qayd etilgan mijozga ketadi. Mini App dagi forma esa begona raqamni qabul
+ * qilmaydi: qo'lda yozilgan raqam tasdiqlanmagan va u boshqa mijozning
+ * yozuvini egallab olardi. Shu ikkisi orasida bo'shliq qolardi — mijozning
+ * raqami CRM da, eslatma esa hali kelmagan bo'lsa, u raqamini tasdiqlashning
+ * hech qanday yo'lini topa olmasdi. `/start` o'sha bo'shliqni yopadi.
+ */
+async function handleStart(message: Message, deps: WebhookDeps): Promise<void> {
+  const chatId = message.chat?.id;
+  if (chatId === undefined) {
+    return;
+  }
+
+  const locale = replyLocale(message.from?.language_code);
+
+  try {
+    await deps.sendMessage({
+      chatId: BigInt(chatId),
+      text: REPLIES[locale].START,
+      locale,
+      requestContact: true,
+    });
+  } catch (error) {
+    console.error('[worker] /start javobi yuborilmadi', error);
+  }
+}
+
+/** Telegram guruhda buyruqni `/start@botname` ko'rinishida yuboradi. */
+function isStartCommand(text: string | undefined): boolean {
+  return text?.trim().split(/\s+/)[0]?.split('@')[0] === '/start';
+}
+
 async function handleContact(message: Message, deps: WebhookDeps): Promise<void> {
   const contact = message.contact;
   const from = message.from;
@@ -232,8 +292,12 @@ async function handleContact(message: Message, deps: WebhookDeps): Promise<void>
         telegramId: BigInt(from.id),
         phone: contact.phone_number,
         name: contact.first_name,
+        // §6: raqamni Telegram yubordi va u yuqorida `from.id` bilan
+        // solishtirildi — ya'ni u AYNAN shu odamniki. Faqat shunday raqam
+        // mavjud mijoz yozuvi bilan birlashtirilishi mumkin.
+        verified: true,
       });
-      text = result.status === 'SAVED' ? replies.PHONE_SAVED : replies.PHONE_INVALID;
+      text = replies[SAVE_PHONE_REPLIES[result.status]];
     } catch (error) {
       console.error('[worker] telefon raqami saqlanmadi', error);
       text = replies.PHONE_ERROR;
@@ -269,6 +333,8 @@ export async function handleTelegramUpdate(
     await handleCallback(query, deps);
   } else if (message?.contact) {
     await handleContact(message, deps);
+  } else if (isStartCommand(message?.text)) {
+    await handleStart(message!, deps);
   }
 
   return { status: 200 };

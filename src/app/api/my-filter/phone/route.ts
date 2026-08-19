@@ -56,10 +56,21 @@ export async function POST(request: Request) {
     const result = await savePhoneForTelegramUser({
       telegramId: BigInt(session.telegramId),
       phone: parsed.data.phone,
+      // §6: forma raqamni TASDIQLAMAYDI — uni mijoz qo'lda yozadi va begona
+      // raqam bo'lishi mumkin. Tasdiqlangan yo'l botda: «Raqamni yuborish»
+      // tugmasida raqamni Telegram ning o'zi beradi.
+      verified: false,
     });
 
     if (result.status === 'INVALID_PHONE') {
       return NextResponse.json({ error: 'invalid_phone' }, { status: 400 });
+    }
+
+    // 409: so'rov to'g'ri, lekin raqam boshqa mijozda. 400 emas — mijoz
+    // formani to'g'ri to'ldirgan va uni tuzatib bo'lmaydi; javob boshqa yo'l
+    // ko'rsatishi kerak.
+    if (result.status === 'PHONE_TAKEN') {
+      return NextResponse.json({ error: 'phone_taken' }, { status: 409 });
     }
 
     return NextResponse.json({ status: 'SAVED' });

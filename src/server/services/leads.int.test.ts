@@ -146,4 +146,46 @@ describe('createLead', () => {
     const user = await prisma.user.findUnique({ where: { telegramId: 555000111n } });
     expect(user?.phone).toBe('+998901234567');
   });
+
+  /**
+   * §6 — hisobni egallab olishga urinish, eng ochiq yo'l orqali.
+   *
+   * Ariza formasi ommaviy: raqamni istalgan odam yozadi, `telegramId` esa
+   * sessiyadan keladi. Tasdiqsiz birlashtirishda buzg'unchi shu ikkisini
+   * qo'shib, boshqa mijozning yozuvini o'ziga ko'chirib olardi —
+   * o'rnatishlari (manzili bilan), arizalari va eslatmalari bilan birga,
+   * mijozning yozuvi esa butunlay o'chib ketardi.
+   *
+   * Ariza baribir yaratiladi: haqiqiy mijoz ham shu yo'ldan keladi va
+   * uni rad etish sotuvni yo'qotardi. Raqam `Lead.phone` da qoladi —
+   * menejer ko'radi va kerak bo'lsa CRM da qo'lda birlashtiradi.
+   */
+  test('BEGONA raqamli ariza mijoz yozuvini egallamaydi', async () => {
+    const victim = await prisma.user.create({
+      data: { phone: '+998901234567', name: 'Mijoz' },
+    });
+    const filter = await seedFilter();
+    await prisma.installation.create({
+      data: { userId: victim.id, filterProductId: filter.id, installedAt: new Date() },
+    });
+    const attacker = await prisma.user.create({ data: { telegramId: 555000111n } });
+
+    const lead = await createLead({
+      phone: '+998901234567',
+      source: 'MINIAPP',
+      telegramId: 555000111n,
+    });
+
+    // Ariza bor va raqam unda saqlangan.
+    expect(lead.phone).toBe('+998901234567');
+    expect(lead.userId).toBe(attacker.id);
+
+    // Mijozning yozuvi va o'rnatishi tegilmagan.
+    expect(await prisma.user.count()).toBe(2);
+    const kept = await prisma.user.findUniqueOrThrow({ where: { id: victim.id } });
+    expect(kept.phone).toBe('+998901234567');
+    expect(kept.telegramId).toBeNull();
+    expect(await prisma.installation.count({ where: { userId: victim.id } })).toBe(1);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: attacker.id } })).phone).toBeNull();
+  });
 });

@@ -106,7 +106,13 @@ export interface RegisterClientInput {
  *
  * Ataylab `resolveLeadClient` orqali: shu raqam bilan mijoz allaqachon bor
  * bo'lsa, yangisi yaratilmaydi va tarixi bir joyda qoladi.
+ *
+ * §6: raqam TASDIQLANGAN hisoblanadi — uni admin panelga menejer kiritadi,
+ * ya'ni ortida haqiqiy odam va qo'ng'iroq turadi. Aynan shu yerda
+ * dublikatlarni birlashtirish ishlashi kerak: mijoz Mini App ga kirgan
+ * bo'lsa, uning Telegram yozuvi bilan o'rnatish bitta profilda qoladi.
  */
-export function registerClient(input: RegisterClientInput): Promise<User> {
-  return resolveLeadClient(input);
+export async function registerClient(input: RegisterClientInput): Promise<User> {
+  const { user } = await resolveLeadClient({ ...input, verified: true });
+  return user;
 }

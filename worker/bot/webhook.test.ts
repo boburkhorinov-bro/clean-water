@@ -305,10 +305,14 @@ describe('handleTelegramUpdate', () => {
       );
 
       expect(response.status).toBe(200);
+      // `verified` — §6 dagi asosiy shart: raqamni Telegram ning o'zi
+      // yubordi va u `from.id` bilan solishtirildi, ya'ni birlashtirish
+      // xavfsiz. Qo'lda yozilgan raqam bunday kafolat bermaydi.
       expect(d.savePhone).toHaveBeenCalledWith({
         telegramId: 555000111n,
         phone: '998901234567',
         name: 'Aziz',
+        verified: true,
       });
       expect(vi.mocked(d.sendMessage).mock.calls[0]?.[0]?.text).toBeTruthy();
     });
@@ -361,6 +365,23 @@ describe('handleTelegramUpdate', () => {
       expect(vi.mocked(d.sendMessage).mock.calls[0]?.[0]?.text).toBeTruthy();
     });
 
+    test('raqam boshqa mijozda bo‘lsa alohida javob beriladi', async () => {
+      // Bot yo'lida bu yuzaga kelmasligi kerak (raqam tasdiqlangan), lekin
+      // javob «raqamni o'qib bo'lmadi» bo'lib qolsa, mijoz raqamini
+      // qayta-qayta yuboraverardi.
+      const d = deps({ savePhone: vi.fn(async () => ({ status: 'PHONE_TAKEN' as const })) });
+
+      await handleTelegramUpdate(
+        {
+          secretToken: 'sir',
+          body: contactUpdate({ phone_number: '998901234567', user_id: 555000111 }),
+        },
+        d,
+      );
+
+      expect(vi.mocked(d.sendMessage).mock.calls[0]?.[0]?.text).toContain('boshqa');
+    });
+
     test('SAQLASH YIQILSA ham 200 qaytadi va mijoz xabardor bo‘ladi', async () => {
       const d = deps({
         savePhone: vi.fn(async () => {
@@ -378,6 +399,62 @@ describe('handleTelegramUpdate', () => {
 
       expect(response.status).toBe(200);
       expect(vi.mocked(d.sendMessage).mock.calls[0]?.[0]?.text).toBeTruthy();
+    });
+
+    /**
+     * `/start` — tasdiqlangan raqamning YAGONA ochiq eshigi.
+     *
+     * Kontakt tugmasi eslatma xabarida paydo bo'ladi, eslatma esa faqat
+     * o'rnatishi qayd etilgan mijozga ketadi. Mini App dagi forma bo'lsa
+     * begona raqamni qabul qilmaydi (§6). Ya'ni `/start` siz mijozning
+     * raqami CRM da bo'lsa-yu, eslatma hali kelmagan bo'lsa — u raqamini
+     * tasdiqlashning hech qanday yo'li qolmasdi.
+     */
+    test('/start raqam so‘rovchi tugmani yuboradi', async () => {
+      const d = deps();
+
+      const response = await handleTelegramUpdate(
+        {
+          secretToken: 'sir',
+          body: {
+            update_id: 4,
+            message: {
+              message_id: 1,
+              chat: { id: 555000111 },
+              from: { id: 555000111, language_code: 'uz' },
+              text: '/start',
+            },
+          },
+        },
+        d,
+      );
+
+      expect(response.status).toBe(200);
+      const sent = vi.mocked(d.sendMessage).mock.calls[0]?.[0];
+      expect(sent?.requestContact).toBe(true);
+      expect(sent?.chatId).toBe(555000111n);
+    });
+
+    test('/start@botname ham ishlaydi — guruhda Telegram shunday yuboradi', async () => {
+      const d = deps();
+
+      await handleTelegramUpdate(
+        {
+          secretToken: 'sir',
+          body: {
+            update_id: 5,
+            message: {
+              message_id: 1,
+              chat: { id: 555000111 },
+              from: { id: 555000111 },
+              text: '/start@cleanwater_bot',
+            },
+          },
+        },
+        d,
+      );
+
+      expect(vi.mocked(d.sendMessage).mock.calls[0]?.[0]?.requestContact).toBe(true);
     });
 
     test('oddiy matnli xabar e’tiborsiz qoldiriladi', async () => {

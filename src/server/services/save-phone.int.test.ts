@@ -76,17 +76,8 @@ describe('savePhoneForTelegramUser', () => {
     );
   });
 
-  /**
-   * Eng muhim holat: aynan shu tuzoq qanday yuzaga kelgan bo'lsa, shunday.
-   * Menejer mijozni CRM da telefon bo'yicha yozgan (o'rnatish o'sha yozuvda),
-   * mijoz esa keyin Mini App ni ochgan va ikkinchi, telefonsiz yozuv paydo
-   * bo'lgan. Raqam kiritilgach ikkalasi bitta bo'lishi va o'rnatish Telegram
-   * yozuviga ko'chishi shart — aks holda «Mening filtrim» bo'sh qolaveradi.
-   */
-  test('CRM dagi yozuv bilan birlashadi — o‘rnatish Telegram yozuviga ko‘chadi', async () => {
-    const guest = await prisma.user.create({
-      data: { phone: '+998901234567', name: 'Aziz' },
-    });
+  async function makeExistingClient() {
+    const client = await prisma.user.create({ data: { phone: '+998901234567', name: 'Aziz' } });
     const filter = await prisma.product.create({
       data: {
         kind: 'FILTER',
@@ -97,11 +88,27 @@ describe('savePhoneForTelegramUser', () => {
       },
     });
     await prisma.installation.create({
-      data: { userId: guest.id, filterProductId: filter.id, installedAt: new Date('2026-01-10') },
+      data: { userId: client.id, filterProductId: filter.id, installedAt: new Date('2026-01-10') },
     });
+    return client;
+  }
+
+  /**
+   * Eng muhim holat: aynan shu tuzoq qanday yuzaga kelgan bo'lsa, shunday.
+   * Menejer mijozni CRM da telefon bo'yicha yozgan (o'rnatish o'sha yozuvda),
+   * mijoz esa keyin Mini App ni ochgan va ikkinchi, telefonsiz yozuv paydo
+   * bo'lgan. Raqam TASDIQLANGACH ikkalasi bitta bo'ladi va o'rnatish Telegram
+   * yozuviga ko'chadi — aks holda «Mening filtrim» bo'sh qolaverardi.
+   */
+  test('TASDIQLANGAN raqam CRM dagi yozuv bilan birlashadi', async () => {
+    await makeExistingClient();
     await prisma.user.create({ data: { telegramId: 555n } });
 
-    const result = await savePhoneForTelegramUser({ telegramId: 555n, phone: '+998901234567' });
+    const result = await savePhoneForTelegramUser({
+      telegramId: 555n,
+      phone: '+998901234567',
+      verified: true,
+    });
 
     expect(result.status).toBe('SAVED');
     expect(await prisma.user.count()).toBe(1);
@@ -109,5 +116,25 @@ describe('savePhoneForTelegramUser', () => {
     const survivor = await prisma.user.findUniqueOrThrow({ where: { telegramId: 555n } });
     expect(survivor.phone).toBe('+998901234567');
     expect(await prisma.installation.count({ where: { userId: survivor.id } })).toBe(1);
+  });
+
+  /**
+   * §6: Mini App dagi forma raqamni TASDIQLAMAYDI — mijoz uni shunchaki
+   * yozadi. Boshqa mijozning raqami yozilsa, uning yozuvi egallanib
+   * ketmasligi kerak: o'rnatish manzili va eslatmalari begonaga o'tardi.
+   * Mijozga to'g'ri yo'l ko'rsatiladi — botdagi «Raqamni yuborish» tugmasi.
+   */
+  test('TASDIQLANMAGAN raqam begona yozuvni egallamaydi', async () => {
+    const existing = await makeExistingClient();
+    const stranger = await prisma.user.create({ data: { telegramId: 555n } });
+
+    const result = await savePhoneForTelegramUser({ telegramId: 555n, phone: '+998901234567' });
+
+    expect(result.status).toBe('PHONE_TAKEN');
+    expect(await prisma.user.count()).toBe(2);
+    expect(
+      (await prisma.user.findUniqueOrThrow({ where: { id: stranger.id } })).phone,
+    ).toBeNull();
+    expect(await prisma.installation.count({ where: { userId: existing.id } })).toBe(1);
   });
 });

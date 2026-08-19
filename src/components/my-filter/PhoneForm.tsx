@@ -48,8 +48,18 @@ export function PhoneForm({ t }: { t: Messages }) {
 
       // Har bir holat uchun o'z matni: «xato yuz berdi» mijozga nima
       // qilishni aytmaydi.
+      //
+      // 409 — raqam boshqa yozuvda (§6). Bu mijozning xatosi emas va uni
+      // formani tuzatib hal qilib bo'lmaydi, shuning uchun javob boshqa
+      // yo'lni ko'rsatadi: botdagi tasdiqlangan raqam.
       setStatus('error');
-      setError(response.status === 429 ? t.formErrorRate : t.phoneErrorInvalid);
+      setError(
+        response.status === 429
+          ? t.formErrorRate
+          : response.status === 409
+            ? t.phoneErrorTaken
+            : t.phoneErrorInvalid,
+      );
     } catch {
       setStatus('error');
       setError(t.phoneErrorGeneric);

@@ -159,7 +159,7 @@ sanalmagan turlarni umuman yubormaydi:
 | Turi | Nimaga kerak |
 |---|---|
 | `callback_query` | eslatmadagi «Almashtirishga buyurtma» tugmasi |
-| `message` | telefonsiz mijoz ulashgan kontakt (§4.5) |
+| `message` | telefonsiz mijoz ulashgan kontakt va `/start` (§4.5) |
 
 `message` tushib qolsa, telefonsiz mijoz «Raqamni yuborish» tugmasini
 bosadi, Telegram kontaktni yuboradi — va u hech qayerga yetib bormaydi.

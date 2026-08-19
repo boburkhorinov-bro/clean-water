@@ -76,6 +76,9 @@ const uz = {
   phoneSaving: 'Saqlanmoqda…',
   phoneSaved: 'Raqam saqlandi. Endi almashtirishga buyurtma berishingiz mumkin.',
   phoneErrorInvalid: 'Raqamni tekshiring. Namuna: +998 90 123 45 67',
+  phoneErrorTaken:
+    'Bu raqam allaqachon ro‘yxatdan o‘tgan. Uni tasdiqlash uchun botga o‘ting va ' +
+    '/start ni yuboring — raqamni Telegram o‘zi jo‘natadi.',
   phoneErrorGeneric: 'Raqam saqlanmadi. Birozdan so‘ng qayta urinib ko‘ring.',
 
   replacementSending: 'Yuborilmoqda…',
@@ -168,6 +171,9 @@ const ru: Messages = {
   phoneSaving: 'Сохраняем…',
   phoneSaved: 'Номер сохранён. Теперь можно заказать замену.',
   phoneErrorInvalid: 'Проверьте номер. Пример: +998 90 123 45 67',
+  phoneErrorTaken:
+    'Этот номер уже зарегистрирован. Чтобы подтвердить его, откройте бот и ' +
+    'отправьте /start — Telegram пришлёт номер сам.',
   phoneErrorGeneric: 'Номер не сохранён. Попробуйте чуть позже.',
 
   replacementSending: 'Отправляем…',
