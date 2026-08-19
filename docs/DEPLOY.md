@@ -95,10 +95,28 @@ berayotgan bo'lishi kerak).
 
 ```bash
 docker compose up -d --build
-docker compose exec web npx prisma migrate deploy
-docker compose exec web npm run db:seed      # ixtiyoriy: demo katalog
 docker compose ps                            # hammasi `healthy` bo'lsin
 sh scripts/smoke.sh http://<domen>
+```
+
+**Migratsiyalar alohida chaqirilmaydi.** `docker-compose.yml` da bir martalik
+`migrate` xizmati bor va `web` uning muvaffaqiyatli tugashini kutadi, ya'ni
+`up` ning o'zi yetarli. Natijani ko'rish:
+
+```bash
+docker compose logs migrate
+```
+
+Ular `web` konteyneri ichida ishlay OLMAYDI: `web` obrazi faqat
+`.next/standalone` dan iborat — u yerda na `prisma` CLI, na
+`prisma/migrations/`, na `prisma.config.ts` bor. Shu sababli migratsiyalar
+`builder` bosqichidan quriladigan alohida obrazda ishlaydi (`Dockerfile`,
+`migrator` bosqichi).
+
+Demo katalog kerak bo'lsa — o'sha obrazda:
+
+```bash
+docker compose run --rm migrate npm run db:seed
 ```
 
 ## 4. TLS yoqish
@@ -252,8 +270,7 @@ bilan 500 qaytaradi.
 ```bash
 cd /opt/cleanwater
 git pull
-docker compose up -d --build
-docker compose exec web npx prisma migrate deploy
+docker compose up -d --build      # migratsiyalar shu yerda qo'llanadi
 sh scripts/smoke.sh https://<domen>
 ```
 
@@ -295,7 +312,7 @@ qurilib keshlanadi. Tekshirish: javobda `x-nextjs-cache` ikkinchi so'rovda
 
 - [ ] `.env` to'ldirilgan, sirlar generatsiya qilingan (namuna qiymati yo'q)
 - [ ] `docker compose ps` — barcha xizmatlar `healthy`
-- [ ] Migratsiyalar qo'llangan (`prisma migrate deploy`)
+- [ ] Migratsiyalar qo'llangan — `docker compose logs migrate` da xato yo'q
 - [ ] TLS ishlaydi, HTTP → HTTPS yo'naltiriladi, HSTS sarlavhasi bor
 - [ ] `sh scripts/smoke.sh https://<domen>` — hammasi joyida
 - [ ] Telegram webhook o'rnatilgan (`getWebhookInfo` da xato yo'q)

@@ -37,6 +37,21 @@ RUN case "$NEXT_PUBLIC_SITE_URL" in \
 
 RUN npx prisma generate && npm run build
 
+# Migratsiyalar va seed uchun bosqich.
+#
+# Nega alohida: pastdagi `runner` faqat `.next/standalone` ni oladi va u
+# yerda `prisma` CLI ham, `prisma/migrations/` ham, `prisma.config.ts` ham
+# YO'Q — obraz ataylab kichik. `builder` da esa to'liq `node_modules`
+# (prisma CLI va `tsx`) va butun manba daraxti bor, ya'ni qo'shimcha
+# yuklab olishsiz ishlaydi.
+#
+# Bu obraz doimiy ishlamaydi: `docker-compose.yml` dagi `migrate` xizmati
+# uni bir marta ishga tushiradi va `web` uning tugashini kutadi.
+FROM builder AS migrator
+ENV NODE_ENV=production
+# `DATABASE_URL` ish vaqtida beriladi (builder dagi qiymat qurish uchun edi).
+CMD ["npx", "prisma", "migrate", "deploy"]
+
 FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production

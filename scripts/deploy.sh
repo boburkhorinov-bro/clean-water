@@ -79,6 +79,31 @@ esac
 
 echo "  domen: $DOMAIN"
 
+# `.env` dagi eng qimmat ikkita xato — ikkalasi ham deployni oxirigacha
+# olib boradi va faqat ilova bazaga ulanmoqchi bo'lganda ko'rinadi.
+DB_URL="$(env_value DATABASE_URL)"
+[ -n "$DB_URL" ] || fail ".env da DATABASE_URL yo'q."
+
+# `env.example` dagi namuna qiymat `localhost` — u LOKAL ishlab chiqish
+# uchun. Konteyner ichida `localhost` konteynerning o'zi bo'ladi va baza
+# topilmaydi; compose tarmog'ida host xizmat nomi, ya'ni `postgres`.
+case "$DB_URL" in
+  *@localhost:*|*@127.0.0.1:*)
+    fail "DATABASE_URL konteyner ichida ishlamaydi (host: localhost)." \
+      "Docker tarmog'ida host xizmat nomi bo'ladi: ...@postgres:5432/..." ;;
+esac
+
+# `POSTGRES_PASSWORD` bazani YARATADI, `DATABASE_URL` unga ULANADI. Ular
+# ajralib qolsa, xato `web` loglarida `password authentication failed`
+# bo'lib qoladi va sababi darhol ko'rinmaydi.
+PG_PASSWORD="$(env_value POSTGRES_PASSWORD)"
+URL_PASSWORD="$(printf '%s' "$DB_URL" | sed -n 's|.*://[^:]*:\([^@]*\)@.*|\1|p')"
+
+if [ -n "$PG_PASSWORD" ] && [ "$PG_PASSWORD" != "$URL_PASSWORD" ]; then
+  fail "POSTGRES_PASSWORD va DATABASE_URL dagi parol mos kelmaydi." \
+    "Ikkalasida bir xil qiymat bo'lishi shart — docs/TODO-OWNER.md §1."
+fi
+
 # Bepul subdomenlarda `www.` varianti mavjud emas: DuckDNS bitta nomga
 # bitta A-yozuvi beradi. Uni sertifikatga qo'shish butun so'rovni yiqitadi.
 CERT_DOMAINS="-d $DOMAIN"
@@ -117,13 +142,34 @@ fi
 step "3/8  Obrazlarni qurish va xizmatlarni ko'tarish"
 echo "  Birinchi qurish ARM da uzoq ketadi (Next.js build ~1.5 GB yeydi)."
 
-$COMPOSE up -d --build
+# Migratsiyalar shu yerda ham qo'llanadi: `migrate` — bir martalik xizmat va
+# `web` uning muvaffaqiyatli tugashini kutadi (docker-compose.yml).
+$COMPOSE up -d --build \
+  || fail "Xizmatlar ko'tarilmadi." \
+    "Migratsiyalar yiqilgan bo'lishi mumkin: $COMPOSE logs migrate | tail -50"
 
 # ── 4. Migratsiyalar ───────────────────────────────────────────────────────
 step "4/8  Migratsiyalar"
 
-$COMPOSE exec -T web npx prisma migrate deploy \
-  || fail "Migratsiya yiqildi." "$COMPOSE logs postgres | tail -50"
+# Bu yerga yetib kelgan bo'lsak, ular allaqachon qo'llangan — `web` boshqacha
+# ko'tarilmasdi. Baribir tekshiramiz: jimgina o'tkazib yuborilgan migratsiya
+# eng qimmat nosozlik — ilova eski sxemada ishlaydi va buni faqat mijoz
+# sezadi.
+MIGRATE_CID="$($COMPOSE ps -aq migrate 2>/dev/null | head -n1)"
+
+if [ -z "$MIGRATE_CID" ]; then
+  fail "migrate konteyneri topilmadi." \
+    "docker-compose.yml da migrate xizmati bormi? $COMPOSE config --services"
+fi
+
+MIGRATE_CODE="$(docker inspect --format '{{.State.ExitCode}}' "$MIGRATE_CID" 2>/dev/null || echo '')"
+
+if [ "$MIGRATE_CODE" != "0" ]; then
+  fail "Migratsiyalar yiqildi (exit=${MIGRATE_CODE:-aniqlanmadi})." \
+    "$COMPOSE logs migrate | tail -50"
+fi
+
+echo "  migratsiyalar qo'llandi"
 
 # ── 5. Sog'liq ─────────────────────────────────────────────────────────────
 step "5/8  Xizmatlar javob berishini kutish"

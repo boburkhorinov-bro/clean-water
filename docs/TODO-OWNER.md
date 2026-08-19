@@ -1,6 +1,6 @@
 # Loyiha egasi bajaradigan ishlar
 
-Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 671 test o'tadi (401 birlik +
+Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 688 test o'tadi (418 birlik +
 270 integratsiya, 2026-08-19 da tekshirilgan). Pastdagilar —
 faqat siz bajara oladigan ishlar: ular tashqi hisoblar, pul, jismoniy
 qurilmalar yoki biznes qarorlarini talab qiladi.
@@ -16,6 +16,16 @@ talab qilmaydi):
   ([DEPLOY.md §5](DEPLOY.md)) — `scripts/deploy.sh` buni o'zi qiladi.
 - **Hisobni egallab olish yo'li yopildi** (quyida batafsil).
 - Mahsulot sahifalari ISR ga o'tkazildi (yuklama ostida ~5 barobar sekin edi).
+- **Deploy zanjiridagi uchta tuzoq yopildi** — ular birinchi urinishda,
+  serverda ko'rinardi:
+  1. migratsiyalar `web` konteyneri ichida chaqirilardi, u yerda esa
+     `prisma` CLI ham, migratsiya fayllari ham yo'q — endi ular alohida
+     bir martalik `migrate` xizmatida ishlaydi va `up` ning o'zi yetarli;
+  2. sertifikat volumei nomi papka nomiga bog'liq edi — Compose loyiha
+     nomi qat'iy belgilandi (`cleanwater`);
+  3. `.env` da `DATABASE_URL` `localhost` ga qarasa yoki parollar ajralib
+     qolsa, skript endi BOSHIDA to'xtaydi — avval buni obrazlar qurilib,
+     sertifikat olinganidan keyin bilib olardik.
 
 ### Menejerlar bilishi kerak: raqam qachon birlashadi
 
@@ -128,7 +138,8 @@ Batafsil tartib — [DEPLOY.md](DEPLOY.md). Cheklist §10 da.
 
 - [ ] `.env` to'ldirilgan, sirlar generatsiya qilingan
 - [ ] `docker compose ps` — barcha xizmatlar `healthy`
-- [ ] Migratsiyalar qo'llangan (`prisma migrate deploy`)
+- [ ] Migratsiyalar qo'llangan — `docker compose logs migrate` da xato yo'q
+      (ular `up` da avtomatik ishlaydi, `web` ularni kutadi)
 - [ ] TLS ishlaydi, HTTP → HTTPS, HSTS sarlavhasi bor
 - [ ] `sh scripts/smoke.sh https://<domen>` — 15 tekshiruv o'tadi
 - [ ] Telegram webhook o'rnatilgan (`getWebhookInfo` da xato yo'q)

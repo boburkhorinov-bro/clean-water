@@ -6,6 +6,13 @@
 #
 # To'liq deploy tartibi (TLS, webhook, zaxira) — docs/DEPLOY.md.
 
+# Loyiha nomi ATAYLAB qat'iy belgilangan. Ko'rsatilmasa Compose uni papka
+# nomidan oladi va volume lar `<papka>_postgres-data` bo'lib ketardi —
+# repozitoriy boshqa nom bilan klonlansa, `deploy.sh` sertifikat olayotganda
+# ulaydigan `cleanwater_certbot-webroot` YANGI BO'SH volume bo'lardi va
+# Let's Encrypt tekshiruvi 404 olardi.
+name: cleanwater
+
 services:
   postgres:
     image: postgres:17-alpine
@@ -26,6 +33,33 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── Migratsiyalar (§5) ─────────────────────────────────────────────────────
+  # Bir martalik xizmat: ishlaydi, tugaydi va o'chadi. `web` uning
+  # MUVAFFAQIYATLI tugashini kutadi — aks holda ilova eski sxemadagi bazaga
+  # ulanib, so'rovlarni 500 bilan qaytarardi va buni faqat mijoz sezardi.
+  #
+  # Nega `web` ichida emas: `web` obrazida `.next/standalone` dan boshqa
+  # hech narsa yo'q — na prisma CLI, na migratsiya fayllari.
+  #
+  # `prisma migrate deploy` idempotent, shuning uchun har `up` da ishlashi
+  # muammo emas: qo'llanmagan migratsiya bo'lmasa, u bir necha soniyada
+  # tugaydi.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+      args:
+        # `builder` bosqichi bu argumentni talab qiladi (§4.7 tekshiruvi).
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+    restart: 'no'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      TZ: ${TZ:-Asia/Tashkent}
+
   web:
     build:
       context: .
@@ -40,6 +74,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
@@ -67,6 +103,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      # Eslatmalar o'tishi va bot webhooki ham bazaga boradi: eski sxemada
+      # ular yiqilardi, `restart: unless-stopped` esa buni tsiklga aylantirardi.
+      migrate:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: ${DATABASE_URL}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
