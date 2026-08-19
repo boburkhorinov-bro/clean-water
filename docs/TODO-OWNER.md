@@ -1,9 +1,21 @@
 # Loyiha egasi bajaradigan ishlar
 
-Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 621 test o'tadi (370 birlik +
-251 integratsiya, 2026-08-18 da tekshirilgan). Pastdagilar —
+Kod tayyor: kritik yo'l (TZ §3–§9) yopilgan, 660 test o'tadi (398 birlik +
+262 integratsiya, 2026-08-19 da tekshirilgan). Pastdagilar —
 faqat siz bajara oladigan ishlar: ular tashqi hisoblar, pul, jismoniy
 qurilmalar yoki biznes qarorlarini talab qiladi.
+
+**2026-08-19 da yopilgan kod bo'shliqlari** (endi sizdan hech narsa
+talab qilmaydi):
+
+- Telefonsiz Mini App mijozi boshi berk ko'chada qolmaydi: botda
+  «Raqamni yuborish» tugmasi (`request_contact` — raqamni Telegram o'zi
+  beradi) va «Mening filtrim» ekranida forma. Raqam kiritilgach mijozning
+  CRM dagi yozuvi bilan avtomatik birlashadi.
+  **Deployda diqqat:** `setWebhook` da `allowed_updates` ichida `message`
+  bo'lishi shart, aks holda kontakt botga yetib bormaydi
+  ([DEPLOY.md §5](DEPLOY.md)) — `scripts/deploy.sh` buni o'zi qiladi.
+- Mahsulot sahifalari ISR ga o'tkazildi (yuklama ostida ~5 barobar sekin edi).
 
 Tartib muhim: yuqoridagi bloklar pastdagilarni bloklaydi.
 
@@ -126,9 +138,10 @@ Bu mashinada brauzer avtomatizatsiyasi ham, haqiqiy qurilma ham yo'q.
       ko'chirgani uchun Login Widget MVP dan chiqarilgan (2026-08-14), lekin
       asl TZ hali eski holatda. Hujjatni yangilash — sizning qaroringiz,
       men buyurtmachi hujjatlariga tegmayman.
-- [ ] **Dinamik mahsulot sahifasi** yuklama ostida boshqalardan ~5 barobar
-      sekin (11.5 RPS / p95 634 ms). Reklama yoki mavsumiy yuklama kutilsa,
-      uni ham ISR ga o'tkazish kerak.
+- [x] ~~**Dinamik mahsulot sahifasi** yuklama ostida ~5 barobar sekin~~ —
+      hal qilindi (2026-08-19): mahsulot sahifalari ham ISR ga o'tkazildi
+      (`revalidate = 60`, ro'yxatlar bilan bir xil). Admin panelda
+      tahrirlangan mahsulot bir daqiqagacha eski ko'rinishi mumkin.
 
 ---
 
@@ -142,14 +155,3 @@ Bular xato emas, lekin bilib turishingiz kerak:
   holat saqlashni (Redis) talab qilardi, u MVP da yo'q.
 - **Sessiyani darhol bekor qilib bo'lmaydi** — JWT bazada saqlanmaydi,
   shuning uchun amal muddati 24 soat.
-
-- **Telefonsiz Mini App mijozi kartrij buyurtma qila olmaydi.** Telegram
-  avtorizatsiyasi telefon raqamini bermaydi. Bunday mijoz «Almashtirishga
-  buyurtma» ni bossa, bot «raqamni ilovada qoldiring» deydi, lekin Mini App da
-  bunday forma yo'q — mijoz boshi berk ko'chada qoladi va siz urinish
-  bo'lganini bilmaysiz.
-  **Amaliy chora:** o'rnatishni CRM da yozayotganda mijoz kartochkasida
-  telefon borligiga ishonch hosil qiling. Telefon bo'lsa muammo umuman
-  yuzaga kelmaydi.
-  Doimiy yechim (botda `request_contact` tugmasi) keyingi bosqichga
-  qoldirilgan — `.ralph/fix_plan.md` dagi «Future Enhancements».

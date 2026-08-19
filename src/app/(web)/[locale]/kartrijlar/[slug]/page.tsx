@@ -11,6 +11,34 @@ import { siteUrl } from '@/lib/site';
 import { getCartridgeBySlug } from '@/server/services/catalog';
 import styles from '../../catalog.module.css';
 
+/**
+ * §4.3: SSR + ISR — ro'yxat sahifalari bilan bir xil.
+ *
+ * Mahsulot sahifasi katalogdagi eng ko'p ochiladigan sahifa. Keshsiz u
+ * har so'rovda bazaga borardi va yuklama tekshiruvida ro'yxatdan besh
+ * baravar sekin chiqdi (11.5 RPS / p95 634 ms).
+ */
+export const revalidate = 60;
+
+/**
+ * ISR ni YOQADI, sahifalarni oldindan qurmaydi.
+ *
+ * `revalidate` yolg'iz o'zi YETMAYDI: `generateStaticParams` siz Next.js
+ * dinamik marshrutni butunlay dinamik deb biladi va har so'rov bazaga
+ * boradi. Bu `.next/prerender-manifest.json` da tekshirilgan — sahifa
+ * ro'yxatga umuman tushmasdi.
+ *
+ * Ro'yxat ATAYLAB bo'sh: mahsulotlarni bu yerda so'rash uchun build vaqtida
+ * baza kerak bo'lardi, Docker obrazi esa bazasiz quriladi (CLAUDE.md).
+ * Bo'sh ro'yxat bilan sahifalar birinchi so'rovda quriladi va shundan
+ * keyin keshlanadi — bu yerda kerakli xatti-harakat aynan shu, chunki
+ * katalog admin panel orqali o'zgaradi va build paytidagi ro'yxat baribir
+ * eskirgan bo'lardi.
+ */
+export function generateStaticParams(): { locale: string; slug: string }[] {
+  return [];
+}
+
 type Params = Promise<{ locale: string; slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

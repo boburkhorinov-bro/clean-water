@@ -13,6 +13,18 @@ export async function findUserLocale(userId: string): Promise<'uz' | 'ru'> {
   return user?.lang === 'RU' ? 'ru' : 'uz';
 }
 
+/**
+ * Mijozda telefon raqami bormi (§4.5).
+ *
+ * Telegram avtorizatsiyasi raqam bermaydi, shuning uchun ilovaga birinchi
+ * kirgan mijozda u bo'lmaydi va «Almashtirishga buyurtma» ishlamaydi.
+ * «Mening filtrim» shu javobga qarab raqam formasini ko'rsatadi.
+ */
+export async function hasPhone(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { phone: true } });
+  return Boolean(user?.phone);
+}
+
 export interface TelegramUserInput {
   telegramId: bigint;
   firstName: string | undefined;

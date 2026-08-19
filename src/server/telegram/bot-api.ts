@@ -28,6 +28,41 @@ export function buildReplaceKeyboard(installedPartId: string, locale: Locale): I
   return { inline_keyboard: [[{ text, callback_data: `replace:${installedPartId}` }]] };
 }
 
+export interface ContactButton {
+  text: string;
+  request_contact: true;
+}
+
+/**
+ * Chat ostidagi klaviatura — inline tugmadan farqli, u xabarga emas, chatga
+ * biriktiriladi va bosilganda `message.contact` yuboradi.
+ */
+export interface ReplyKeyboard {
+  keyboard: ContactButton[][];
+  /** Bosilgandan keyin yopiladi: aks holda chatda osilib qoladi. */
+  one_time_keyboard: true;
+  /** Telefonda balandligi bitta tugmaga moslashadi. */
+  resize_keyboard: true;
+}
+
+/**
+ * §4.5: telefonsiz mijozdan raqam olish.
+ *
+ * Nega `request_contact`, forma emas: raqamni Telegram ning o'zi beradi —
+ * mijoz uni yozmaydi, xato qilmaydi va ilovaga o'tishi shart emas. Bu
+ * botdagi eng qisqa yo'l. Mini App dagi forma esa alohida kirish nuqtasi:
+ * mijoz allaqachon ilovada bo'lsa, botga chiqarish ortiqcha qadam bo'lardi.
+ */
+export function buildContactKeyboard(locale: Locale): ReplyKeyboard {
+  const text = locale === 'RU' ? '☎ Отправить номер' : '☎ Raqamni yuborish';
+
+  return {
+    keyboard: [[{ text, request_contact: true }]],
+    one_time_keyboard: true,
+    resize_keyboard: true,
+  };
+}
+
 function requireToken(): string {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
@@ -52,7 +87,7 @@ async function errorOf(response: Response, method: string): Promise<Error> {
 export interface SendBotMessageInput {
   chatId: bigint;
   text: string;
-  replyMarkup?: InlineKeyboard | undefined;
+  replyMarkup?: InlineKeyboard | ReplyKeyboard | undefined;
 }
 
 export async function sendBotMessage(input: SendBotMessageInput): Promise<void> {

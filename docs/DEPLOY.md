@@ -147,11 +147,24 @@ saytni sertifikatsiz qoldiradi.
 curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
   -d "url=https://<domen>/telegram/webhook" \
   -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>" \
-  -d 'allowed_updates=["callback_query"]'
+  -d 'allowed_updates=["callback_query","message"]'
 ```
 
 Tekshirish: `curl https://api.telegram.org/bot<TOKEN>/getWebhookInfo` —
 `pending_update_count` o'smasligi kerak.
+
+**`allowed_updates` dagi ikkala turi ham kerak.** Telegram bu ro'yxatda
+sanalmagan turlarni umuman yubormaydi:
+
+| Turi | Nimaga kerak |
+|---|---|
+| `callback_query` | eslatmadagi «Almashtirishga buyurtma» tugmasi |
+| `message` | telefonsiz mijoz ulashgan kontakt (§4.5) |
+
+`message` tushib qolsa, telefonsiz mijoz «Raqamni yuborish» tugmasini
+bosadi, Telegram kontaktni yuboradi — va u hech qayerga yetib bormaydi.
+Log da xato bo'lmaydi, testlar yashil qoladi: buni faqat mijoz javob
+kutib qolgani bilinganda sezish mumkin.
 
 ## 5.1. Mini App ni BotFather da ro'yxatdan o'tkazish
 
@@ -263,12 +276,20 @@ yuqori chegarasi emas, faqat tartib ko'rsatkichi:
 |---|---|---|---|---|
 | `/uz` (SSG) | 10 | 66 | 137 ms | 253 ms |
 | `/uz/filtrlar` (ISR) | 10 | 70 | 134 ms | 239 ms |
-| `/uz/filtrlar/<slug>` (dinamik, bazaga boradi) | 5 | 11.5 | 248 ms | 634 ms |
+| `/uz/filtrlar/<slug>` (ISR, 2026-08-19 dan) | 10 | 40.9 | 220 ms | 374 ms |
 | `/api/health` | 20 | 144 | 134 ms | 217 ms |
 
-Dinamik sahifa qolganlaridan besh baravar sekin — u har so'rovda bazaga
-boradi. Yuklama kutilsa, mahsulot sahifasini ham ISR ga o'tkazish kerak
-bo'ladi.
+Mahsulot sahifasi avval dinamik edi va har so'rovda bazaga borardi
+(5 parallel so'rovda 11.5 RPS, p95 634 ms) — qolganlaridan besh baravar
+sekin. 2026-08-19 da u ham ISR ga o'tkazildi.
+
+**ISR uchun `revalidate` yolg'iz o'zi yetmaydi.** Dinamik segmentli
+marshrutda (`[slug]`) `generateStaticParams` ham e'lon qilinishi shart:
+usiz Next.js marshrutni to'liq dinamik deb biladi va sahifa
+`.next/prerender-manifest.json` ga umuman tushmaydi. Ro'yxat ataylab bo'sh
+qaytariladi — obraz bazasiz quriladi, sahifalar esa birinchi so'rovda
+qurilib keshlanadi. Tekshirish: javobda `x-nextjs-cache` ikkinchi so'rovda
+`HIT` bo'lishi kerak.
 
 ## 10. Relizga tayyorlik cheklisti
 

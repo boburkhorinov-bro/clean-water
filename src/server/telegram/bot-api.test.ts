@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { buildReplaceKeyboard, sendBotMessage } from './bot-api';
+import { buildContactKeyboard, buildReplaceKeyboard, sendBotMessage } from './bot-api';
 import { TelegramRateLimitError } from './notify-manager';
 
 /**
@@ -19,6 +19,28 @@ describe('buildReplaceKeyboard', () => {
 
   test('ruscha tugma matni', () => {
     expect(buildReplaceKeyboard('p', 'RU').inline_keyboard[0]?.[0]?.text).toContain('Заказать');
+  });
+});
+
+/**
+ * Telefonsiz mijozdan raqam olish (§4.5).
+ *
+ * `request_contact` — Telegram ning o'z mexanizmi: mijoz ilovaga o'tmaydi,
+ * raqamni qo'lda yozmaydi va xato qilmaydi. Raqamni Telegram beradi.
+ */
+describe('buildContactKeyboard', () => {
+  test('tugma raqamni so‘raydi', () => {
+    expect(buildContactKeyboard('UZ').keyboard[0]?.[0]?.request_contact).toBe(true);
+  });
+
+  test('bosilgandan keyin klaviatura yopiladi', () => {
+    // Aks holda u chatda osilib qoladi va mijoz uni yana bosaveradi.
+    expect(buildContactKeyboard('UZ').one_time_keyboard).toBe(true);
+  });
+
+  test('o‘zbekcha va ruscha matn', () => {
+    expect(buildContactKeyboard('UZ').keyboard[0]?.[0]?.text).toContain('Raqam');
+    expect(buildContactKeyboard('RU').keyboard[0]?.[0]?.text).toContain('номер');
   });
 });
 
@@ -92,6 +114,21 @@ describe('sendBotMessage', () => {
     await expect(sendBotMessage({ chatId: 555n, text: 'salom' })).rejects.toThrow(
       /bot was blocked by the user/,
     );
+  });
+
+  test('raqam so‘rovchi klaviatura xabarga ulanadi', async () => {
+    vi.stubEnv('TELEGRAM_BOT_TOKEN', 'token-123');
+    const fetchMock = stubFetch({ status: 200, ok: true });
+
+    await sendBotMessage({
+      chatId: 555n,
+      text: 'Raqam kerak',
+      replyMarkup: buildContactKeyboard('UZ'),
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const body = JSON.parse(String(init.body)) as { reply_markup?: { keyboard?: unknown } };
+    expect(body.reply_markup?.keyboard).toBeDefined();
   });
 
   test('token sozlanmagan bo‘lsa aniq xato beradi', async () => {

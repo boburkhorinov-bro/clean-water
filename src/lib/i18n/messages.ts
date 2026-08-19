@@ -69,10 +69,19 @@ const uz = {
   daysOverdue: 'kun kechikdi',
   dueToday: 'Bugun almashtirish kerak',
   orderReplacement: 'Almashtirishga buyurtma',
+  phoneNeededTitle: 'Telefon raqamingiz',
+  phoneNeededLead:
+    'Kartrij almashtirishga ariza qoldirish uchun raqam kerak — menejer siz bilan shu raqam orqali bog‘lanadi.',
+  phoneSave: 'Saqlash',
+  phoneSaving: 'Saqlanmoqda…',
+  phoneSaved: 'Raqam saqlandi. Endi almashtirishga buyurtma berishingiz mumkin.',
+  phoneErrorInvalid: 'Raqamni tekshiring. Namuna: +998 90 123 45 67',
+  phoneErrorGeneric: 'Raqam saqlanmadi. Birozdan so‘ng qayta urinib ko‘ring.',
+
   replacementSending: 'Yuborilmoqda…',
   replacementCreated: 'Arizangiz qabul qilindi. Menejer tez orada bog‘lanadi.',
   replacementAlready: 'Bu kartrij bo‘yicha ariza allaqachon qabul qilingan.',
-  replacementPhoneRequired: 'Ariza uchun telefon raqami kerak.',
+  replacementPhoneRequired: 'Ariza uchun telefon raqami kerak — uni yuqoridagi formada qoldiring.',
   replacementError: 'Ariza yuborilmadi. Birozdan so‘ng qayta urinib ko‘ring.',
 
   themeToLight: 'Kunduzgi mavzu',
@@ -152,10 +161,19 @@ const ru: Messages = {
   daysOverdue: 'дн. просрочено',
   dueToday: 'Заменить сегодня',
   orderReplacement: 'Заказать замену',
+  phoneNeededTitle: 'Ваш номер телефона',
+  phoneNeededLead:
+    'Номер нужен для заявки на замену картриджа — менеджер свяжется с вами по нему.',
+  phoneSave: 'Сохранить',
+  phoneSaving: 'Сохраняем…',
+  phoneSaved: 'Номер сохранён. Теперь можно заказать замену.',
+  phoneErrorInvalid: 'Проверьте номер. Пример: +998 90 123 45 67',
+  phoneErrorGeneric: 'Номер не сохранён. Попробуйте чуть позже.',
+
   replacementSending: 'Отправляем…',
   replacementCreated: 'Заявка принята. Менеджер скоро свяжется с вами.',
   replacementAlready: 'Заявка на этот картридж уже принята.',
-  replacementPhoneRequired: 'Для заявки нужен номер телефона.',
+  replacementPhoneRequired: 'Для заявки нужен номер телефона — оставьте его в форме выше.',
   replacementError: 'Заявка не отправлена. Попробуйте чуть позже.',
 
   themeToLight: 'Дневная тема',

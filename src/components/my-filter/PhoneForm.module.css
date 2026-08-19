@@ -1,0 +1,96 @@
+/*
+  Ariza formasi bilan bir xil tuzilma (`LeadForm.module.css`), lekin bu
+  ekranda u ikkinchi darajali blok: mijoz «Mening filtrim» ni ko'rgani
+  kelgan, raqam esa yo'lda so'raladi. Shuning uchun ramka aksentli emas —
+  e'tiborni tortadi, ammo asosiy kontentni bosib qo'ymaydi.
+*/
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-3);
+  padding: var(--cw-space-4);
+  margin-bottom: var(--cw-space-6);
+  background: var(--cw-surface);
+  border: 1px solid color-mix(in srgb, var(--cw-accent) 35%, var(--cw-border));
+  border-radius: var(--cw-radius-lg);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cw-text-lg);
+}
+
+.lead {
+  margin: 0;
+  color: var(--cw-text-muted);
+  font-size: var(--cw-text-sm);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-space-1);
+}
+
+.label {
+  font-size: var(--cw-text-sm);
+  font-weight: 600;
+}
+
+.input {
+  font: inherit;
+  color: var(--cw-text);
+  background: var(--cw-surface-raised);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-sm);
+  padding: 0.6rem 0.75rem;
+  width: 100%;
+}
+
+.input:focus-visible {
+  border-color: var(--cw-accent);
+}
+
+.submit {
+  align-self: flex-start;
+  font: inherit;
+  font-weight: 600;
+  color: var(--cw-accent-contrast);
+  background: var(--cw-accent);
+  border: none;
+  border-radius: var(--cw-radius-sm);
+  padding: 0.65rem 1.25rem;
+  cursor: pointer;
+  box-shadow: var(--cw-shadow);
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--cw-accent-hover);
+}
+
+.submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.error {
+  margin: 0;
+  color: var(--cw-danger);
+  font-size: var(--cw-text-sm);
+}
+
+.success {
+  margin: 0 0 var(--cw-space-6);
+  padding: var(--cw-space-4);
+  background: var(--cw-surface);
+  border: 1px solid color-mix(in srgb, var(--cw-success) 35%, var(--cw-border));
+  border-radius: var(--cw-radius-lg);
+  color: var(--cw-text);
+}

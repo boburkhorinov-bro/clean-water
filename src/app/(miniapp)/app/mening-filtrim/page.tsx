@@ -1,10 +1,11 @@
+import { PhoneForm } from '@/components/my-filter/PhoneForm';
 import { ReplaceButton } from '@/components/my-filter/ReplaceButton';
 import { ResourceBar } from '@/components/my-filter/ResourceBar';
 import { TelegramSignIn } from '@/components/my-filter/TelegramSignIn';
 import { formatTashkentDate } from '@/lib/due-date';
 import { getMessages } from '@/lib/i18n/messages';
 import { getSession } from '@/server/auth/require-admin';
-import { findUserLocale } from '@/server/repositories/user-repository';
+import { findUserLocale, hasPhone } from '@/server/repositories/user-repository';
 import { getMyFilterView } from '@/server/services/my-filter';
 import styles from './my-filter.module.css';
 
@@ -34,6 +35,9 @@ export default async function MyFilterPage() {
   const locale = await findUserLocale(session.userId);
   const t = getMessages(locale);
   const installations = await getMyFilterView(session.userId, locale);
+  // §4.5: raqamsiz mijoz almashtirishga ariza qoldira olmaydi. Forma
+  // tugmadan OLDIN ko'rsatiladi — mijoz to'siqqa urilishidan oldin.
+  const phoneKnown = await hasPhone(session.userId);
 
   return (
     <main className={styles.page}>
@@ -41,6 +45,8 @@ export default async function MyFilterPage() {
         <h1 className={styles.title}>{t.myFilterTitle}</h1>
         <p className={styles.lead}>{t.myFilterLead}</p>
       </header>
+
+      {!phoneKnown && <PhoneForm t={t} />}
 
       {installations.length === 0 ? (
         <div className={styles.empty}>

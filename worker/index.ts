@@ -2,8 +2,10 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { checkProcessEnv } from '@/server/env';
 import { runReminderSweep } from '@/server/services/reminder-sweep';
 import { requestReplacement } from '@/server/services/replacement-request';
+import { savePhoneForTelegramUser } from '@/server/services/save-phone';
 import {
   answerCallbackQuery,
+  buildContactKeyboard,
   buildReplaceKeyboard,
   sendBotMessage,
 } from '@/server/telegram/bot-api';
@@ -94,6 +96,18 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       secret: process.env.TELEGRAM_WEBHOOK_SECRET,
       requestReplacement,
       answerCallback: answerCallbackQuery,
+      savePhone: savePhoneForTelegramUser,
+      // Qaror qatlami Telegram tiplarini bilmaydi: u faqat «tugma kerak»
+      // deydi, klaviatura shu yerda quriladi.
+      sendMessage: async ({ chatId, text, locale, requestContact }) => {
+        await sendBotMessage({
+          chatId,
+          text,
+          ...(requestContact
+            ? { replyMarkup: buildContactKeyboard(locale === 'ru' ? 'RU' : 'UZ') }
+            : {}),
+        });
+      },
     },
   );
 
