@@ -62,24 +62,68 @@ Bu mashinada odatda ~0.3 GB bo'sh. Oqibatlari va ular bilan ishlash:
 - Klient `src/generated/prisma/` ga chiqadi (`.gitignore` da). Import: `@/generated/prisma/client`.
 - `src/server/db.ts` klientni **dangasa** quradi. Buni buzmang: `next build` route
   modullarini `DATABASE_URL` siz import qiladi va eager qurish buildni yiqitadi.
+- npm 11 install-skriptlarni bloklaydi. `package.json` dagi `allowScripts` bloki
+  `prisma`, `@prisma/engines`, `esbuild`, `unrs-resolver` ga ruxsat beradi —
+  usiz `prisma generate` ham, lint ham ishlamaydi. Bu blokni o'chirmang.
 
 ## Buyruqlar
 
 ```bash
 npm run dev          # http://localhost:3000 → /uz ga redirect
+npm run dev:login    # lokal admin sessiyasi — `/admin` va Mini App uchun
 npm run build
 npm run lint
 npm run typecheck
 npm test             # birlik testlari, baza kerak emas
 npm run test:int     # integratsiya testlari, HAQIQIY bazani talab qiladi
 npm run db:seed
+npm run worker:dev   # Telegram bot + eslatmalar rejalashtiruvchisi, alohida jarayon
 npx prisma migrate deploy
 ```
 
-Integratsiya testlari `cleanwater_test` bazasida ishlaydi va
+Klondan keyin birinchi marta: `npm install` → `npx prisma generate` →
+`npx prisma migrate deploy` → `npm run db:seed`.
+
+`/admin` va Mini App ning shaxsiy ekranlari Telegram `initData` sini talab
+qiladi, lokal mashinada esa Telegram klienti yo'q — sessiyasiz ular 404
+qaytaradi. `npm run dev:login` `.env` dagi bot tokeni bilan o'sha imzoni yasaydi
+va brauzer konsoliga qo'yiladigan snippet beradi (cookie `httpOnly`, shuning
+uchun uni JS bilan yozib bo'lmaydi — `fetch` javobidagi `Set-Cookie` ni brauzer
+o'zi saqlaydi). Sessiya 24 soat yashaydi. Skript lokal bo'lmagan manzilni rad
+etadi: u amaldagi ADMIN kalitini yasaydi.
+
+Integratsiya testlari alohida `cleanwater_test` bazasida ishlaydi va
 `src/test/int-setup.ts` buni majburlaydi — ular ishlab chiqish bazasiga tegmaydi.
+Bu bazani birinchi marta qo'lda yaratish kerak — `.ralph/AGENT.md`, «Test Instructions».
+
+## Deploy — uchta yo'l, biri tanlangan
+
+- **Tanlangan (2026-08-20): Vercel + Render + Neon** — [docs/DEPLOY-PAAS.md](docs/DEPLOY-PAAS.md).
+  Sayt Vercel da (`vercel.json`), `worker` Render da (`render.yaml`), baza Neon da.
+  Render bepul rejasi 15 daqiqadan keyin uxlaydi — shuning uchun eslatmalarni
+  jarayon ichidagi taymer emas, **tashqi cron** qo'zg'atadi (`/jobs/reminders`).
+- **Docker/VPS** — [docs/DEPLOY.md](docs/DEPLOY.md), majburiy tekshiruv ro'yxati
+  [DEPLOY.md](DEPLOY.md); `scripts/deploy.sh` o'sha qadamlarni idempotent bajaradi.
+- **Oracle + DuckDNS (bepul)** — [docs/DEPLOY-FREE.md](docs/DEPLOY-FREE.md), tanlanmadi.
+
+Loyiha egasidan kutilayotgani: [docs/TODO-OWNER.md](docs/TODO-OWNER.md).
 
 ## Arxitektura qoidalari — buzilmaydi (TZ §4)
+
+Kod xaritasi:
+
+```
+src/app/(web)/[locale]/   ommaviy SSR sayt (uz/ru)
+src/app/(miniapp)/app/    Telegram Mini App
+src/app/(admin)/admin/    admin panel
+src/app/api/              route handler lar — validatsiya + service chaqiruvi, mantiq yo'q
+src/server/services/      biznes-mantiq  ·  src/server/repositories/  Prisma kirish
+src/server/auth/          sessiya, requireAdmin, Telegram initData
+src/server/telegram/      Bot API klienti, menejerga xabar
+src/lib/i18n/             lokalizatsiya, buildAlternates
+worker/bot/               Telegram webhook  ·  worker/jobs/  eslatmalar rejalashtiruvchisi
+scripts/                  deploy, zaxira, tiklash, yuklama testi
+```
 
 - Biznes-mantiq `src/server/services/` da, ma'lumotlarga kirish
   `src/server/repositories/` da. React komponentlarida ham, route handler larda
@@ -105,15 +149,36 @@ Integratsiya testlari `cleanwater_test` bazasida ishlaydi va
 ## Next.js 16 nozikliklari
 
 - `middleware.ts` emas, **`src/proxy.ts`** — konvensiya qayta nomlangan.
+- **`npm run build` dan keyin `npm run dev` — avval `git clean -xfdq .next`.**
+  Aks holda hamma marshrut jimgina 404 qaytaradi: `.next` ildizidagi production
+  artefaktlari `next dev` bilan aralashadi. Log da xato yo'q — buni o'z koding
+  buzgan deb o'ylash oson.
+  **Tozalash yetarli bo'lmasa, avval jarayonni o'ldiring.** `next dev` ni
+  to'xtatganda `node` 3000-portda qolib ketadi va `git clean` turbopack keshini
+  o'chira olmaydi (`Invalid argument` — fayllar band). O'sha keshdan ko'tarilgan
+  server marshrut daraxtini chala quradi va yana hamma joyda 404 beradi
+  (`/api/health` ham). Tartib: `netstat -ano | grep :3000` →
+  `taskkill //F //PID <pid> //T` → `git clean -xfdq .next` → `npm run dev`.
+- **`.next/dev/types/routes.d.ts` `npm run typecheck` ni yiqitishi mumkin**
+  (`TS1434`, `TS1128`): ishlab turgan dev-server uni qayta yozayotganda tsc
+  yarim yozilgan faylni o'qiydi. Bu kod xatosi emas —
+  `git clean -xfdq .next/dev/types` va qayta tekshiring.
 - Marshrut guruhlarining har birida o'z root layouti bor (`<html>` + `<body>`),
   ildizda `app/layout.tsx` **yo'q**. `/` ni `proxy.ts` `/uz` ga yo'naltiradi.
 - Har bir yangi ommaviy sahifa o'z `generateMetadata` ida `buildAlternates` ni
-  chaqirishi shart — layout pathname ni bilmaydi, canonical/hreflang shundan quriladi.
+  (`src/lib/i18n/alternates.ts`) chaqirishi shart — layout pathname ni bilmaydi,
+  canonical/hreflang shundan quriladi.
+- Katalog sahifalarida ISR uchun `export const revalidate = 60` **va**
+  `generateStaticParams` — ikkalasi ham. Yolg'iz `revalidate` bilan Next.js
+  dinamik marshrutni umuman keshlamaydi: hech narsa yiqilmaydi, sayt sekinlashadi
+  (11.5 RPS ga qarshi 40.9). `catalog-revalidate.test.ts` shuni qo'riqlaydi.
 
 ## Tegilmaydigan fayllar
 
 - `.ralph/` va `.ralphrc` — Ralph ning boshqaruv fayllari.
 - `spec.md`, `prompt.md` — buyurtmachining asl hujjatlari.
+- `ralph-claude-code/` — Ralph asbobining tashqi checkout i, `.gitignore` da.
+  Loyiha kodi emas; ichidagi `CLAUDE.md` bu loyihaga taalluqli emas.
 
 ## Ish uslubi
 
