@@ -41,7 +41,15 @@ lekin oddiy flood ga qarshi qatlam endi yo'q.
 
 ## 1. Neon — baza
 
-1. [neon.tech](https://neon.tech) da loyiha yarating, mintaqa: Frankfurt.
+1. [neon.tech](https://neon.tech) da loyiha yarating.
+
+**Mintaqa (qaror: 2026-08-25): `ap-southeast-1` (Singapur).** Uchala qism ham
+shu mintaqada bo'lishi shart — Neon, Render (`render.yaml` da
+`region: singapore`) va Vercel funksiyalari (panelda *Functions → Region →
+Singapore `sin1`*, standart qiymat Vashington `iad1`). Ular ajralib qolsa
+har bir MB so'roviga ~180–230 ms qo'shiladi, bitta sahifada esa so'rov bir
+nechta. Neon da mavjud loyihaning mintaqasi **o'zgartirilmaydi** — faqat
+yangi loyiha yaratish orqali.
 2. Ikkita ulanish satrini oling — ular **farq qiladi**:
    - **Pooled** (`...-pooler.<region>.aws.neon.tech`) — ilova uchun;
    - **Direct** (`-pooler` siz) — migratsiyalar uchun.

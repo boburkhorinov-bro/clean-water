@@ -100,7 +100,9 @@ tartib: [DEPLOY-PAAS.md](DEPLOY-PAAS.md).
 Oracle + Docker varianti bekor qilinmadi, u [DEPLOY.md](DEPLOY.md) va
 [DEPLOY-FREE.md](DEPLOY-FREE.md) da ishlaydigan holatda qoladi.
 
-- [ ] **Neon** — loyiha yarating (Frankfurt). Ikkita ulanish satri kerak:
+- [x] **Neon** — loyiha yaratildi (`ap-southeast-1`, Singapur — qaror
+      2026-08-25; Render va Vercel ham shu mintaqaga qaratildi).
+      Ikkita ulanish satri kerak:
       **pooled** (ilova uchun) va **direct** (migratsiya uchun). Migratsiya
       pooled satr bilan ishlamaydi — sabab DEPLOY-PAAS.md §1 da.
 

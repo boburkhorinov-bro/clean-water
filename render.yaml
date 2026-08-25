@@ -24,8 +24,10 @@ services:
     name: cleanwater-worker
     runtime: node
     plan: free
-    # Toshkentga eng yaqin mintaqa.
-    region: frankfurt
+    # Baza bilan BIR MINTAQADA bo'lishi shart (qaror: 2026-08-25 — Neon
+    # `ap-southeast-1`). Worker har bir eslatma uchun bazaga bir necha marta
+    # boradi; mintaqalar ajralsa har so'rovga ~180 ms qo'shiladi.
+    region: singapore
     branch: main
 
     # `--include=dev` SHART: `tsx` va `prisma` — devDependencies, Render esa
