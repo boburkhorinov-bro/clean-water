@@ -230,6 +230,19 @@ Bu ikki xil narsa: webhook ulangani Mini App ni ochmaydi.
   `scripts/backup.sh` `DATABASE_URL` ni o'qiydi, ya'ni **direct** satr bilan
   ishlaydi.
 
+  **Diqqat: mijoz vositalari serverdan eski bo'lsa dump olinmaydi.**
+  Neon da PostgreSQL 18.6, ishlab chiqish mashinasida esa 17.11 edi va
+  `pg_dump` ishlashdan bosh tortdi (2026-08-26 da sinaldi):
+
+  ```
+  pg_dump: server version: 18.6; pg_dump version: 17.11
+  ```
+
+  Bu ataylab: eski `pg_dump` yangi serverdan chala dump olib, «zaxira bor»
+  degan yolg'on ishonch berardi. Yechim — mashinaga PostgreSQL 18 mijoz
+  vositalarini o'rnatish (server kerak emas, faqat `bin`), so'ng
+  `PATH` da o'shani birinchi qo'yish.
+
 Bepul xizmatlarda SLA yo'q. Zaxirani vaqti-vaqti bilan o'z diskingizga
 olib qo'ying.
 

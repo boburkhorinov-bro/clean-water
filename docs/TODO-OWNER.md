@@ -120,9 +120,10 @@ Oracle + Docker varianti bekor qilinmadi, u [DEPLOY.md](DEPLOY.md) va
       manzil `https://cleanwater-worker.onrender.com`. Sakkizta env
       o'zgaruvchi API orqali qo'yildi (2026-08-26).
 
-- [ ] **cron-job.org** — har kuni 04:00 UTC da `POST /jobs/reminders`.
-      **Usiz eslatmalar umuman ketmaydi:** bepul Render xizmati uxlaydi va
-      jarayon ichidagi taymer uxlab yotgan konteynerda ishlamaydi.
+- [x] **cron-job.org** — ikkita ish yaratildi (2026-08-26): 08:55 isitish
+      (`GET /health`) va 09:00 eslatmalar (`POST /jobs/reminders`), Toshkent
+      vaqti bo'yicha. Isitish ishi shart: sovuq Render ~50 soniyada
+      uyg'onadi, cron chegarasi esa 30 soniya — DEPLOY-PAAS.md §4.
 
 - [ ] **YaTT yoki yuridik shaxs** — to'lov yo'q bo'lsa ham, biznes sifatida
       ishlash uchun.
@@ -176,6 +177,10 @@ Docker/VPS varianti uchun — [DEPLOY.md](DEPLOY.md), cheklist §10 da.
       (2026-08-26)
 - [ ] **Zaxira**: Neon panelidagi tiklash oynasi ko'rildi va bir marta
       qo'lda dump olindi. Bepul xizmatlarda SLA yo'q.
+      **Bloklangan (2026-08-26):** `pg_dump` 17.11 Neon ning 18.6 serveridan
+      dump olishni rad etadi. Avval PostgreSQL 18 mijoz vositalari kerak —
+      [DEPLOY-PAAS.md §6](DEPLOY-PAAS.md). Shungacha yagona himoya — Neon ning
+      o'z tiklash oynasi.
 - [ ] **Sirlarni yangilash**: deploy jarayonida yozishmaga tushgan ikkita
       qiymat — Neon `neondb_owner` paroli va `CRON_SECRET`.
       Neon → Roles → Reset password, so'ng Vercel va Render dagi
