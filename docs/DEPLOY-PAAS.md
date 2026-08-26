@@ -155,6 +155,26 @@ xizmatda) ish yarating:
 | Jadval | har kuni **04:00 UTC** (Toshkent 09:00) |
 | Sarlavha | `Authorization: Bearer <CRON_SECRET>` |
 
+### Ikkinchi ish: «isitish» (2026-08-26 da o'lchangan)
+
+Bitta ish yetarli emas. Uxlab qolgan Render konteyneri **~50 soniyada**
+uyg'onadi, cron xizmatlarining kutish chegarasi esa odatda 30 soniya. Ya'ni
+kunlik ish har safar timeout bilan tugaydi — o'tish aslida bajarilgan
+bo'lsa ham. Natijada tarix doim qizil bo'ladi va haqiqiy nosozlikni
+shovqindan ajratib bo'lmaydi.
+
+Shuning uchun **ikkita ish** yaratiladi:
+
+| Ish | URL | Usul | Vaqt (Toshkent) | Sarlavha |
+|---|---|---|---|---|
+| isitish | `https://<worker>/health` | `GET` | 08:55 | yo'q |
+| eslatmalar | `https://<worker>/jobs/reminders` | `POST` | 09:00 | `Authorization: Bearer <CRON_SECRET>` |
+
+Isitish ishining o'zi timeout bilan tugashi mumkin — bu normal, uning
+vazifasi javob olish emas, konteynerni uyg'otish. 09:00 ga borib xizmat
+tirik bo'ladi va asosiy ish **~1 soniyada** 200 qaytaradi (o'lchangan:
+sovuq 46.7 s, issiq 0.79 s).
+
 Qo'lda tekshirish:
 
 ```bash

@@ -69,11 +69,13 @@ repozitoriyga umuman tushmaydi.
 
 Yaratish kerak bo'lgan sirlar:
 
-- [ ] `JWT_SECRET` — `openssl rand -base64 48` (Vercel)
-- [ ] `TELEGRAM_WEBHOOK_SECRET` — `openssl rand -hex 32` (Render)
-- [ ] `CRON_SECRET` — `openssl rand -hex 32` (Render va cron xizmatida)
+- [x] `JWT_SECRET` — yaratildi va Vercel ga qo`yildi (64 belgi)
+- [x] `TELEGRAM_WEBHOOK_SECRET` — yaratildi (Render ga kiritilishi qoldi)
+- [x] `CRON_SECRET` — yaratildi (Render va cron xizmatiga kiritilishi qoldi)
 
-- [ ] **`NEXT_PUBLIC_SITE_URL`** — Vercel domeningiz.
+- [x] **`NEXT_PUBLIC_SITE_URL`** — `https://cleanwater-two.vercel.app`,
+      buildda muhrlangani `robots.txt`, `sitemap.xml` va canonical bilan
+      tasdiqlandi (2026-08-26).
       Bu qiymat **qurish paytida kodga muhrlanadi**: uni keyin
       o'zgartirsangiz, qayta deploy qilish shart. Aks holda canonical,
       hreflang, `robots.txt` va `sitemap.xml` eski manzilda qoladi —
@@ -106,14 +108,17 @@ Oracle + Docker varianti bekor qilinmadi, u [DEPLOY.md](DEPLOY.md) va
       **pooled** (ilova uchun) va **direct** (migratsiya uchun). Migratsiya
       pooled satr bilan ishlamaydi — sabab DEPLOY-PAAS.md §1 da.
 
-- [ ] **Vercel** — repozitoriyni import qiling, env larni to'ldiring.
+- [x] **Vercel** — loyiha `cleanwater`, domen `cleanwater-two.vercel.app`,
+      funksiyalar mintaqasi `sin1`, env lar to'ldirilgan (2026-08-26).
+      Import qilingan repozitoriya: `boburkhorinov-bro/clean-water`.
       **Hobby rejasi shartlarida tijoriy foydalanish taqiqlangan** va bu
       platforma o'sha ta'rifga tushadi (mahsulot sotiladi, sayt yaratilishi
       uchun haq to'langan). Hobby bilan ishlash sizning qaroringiz
       (2026-08-20); xavf — hisob to'xtatilishi. Rasmiy yo'l Pro, $20/oy.
 
-- [ ] **Render** — blueprint dan `worker` xizmatini yarating
-      ([`render.yaml`](../render.yaml)) va panelda sirlarni kiriting.
+- [x] **Render** — `cleanwater-worker` yaratildi (`singapore`, `free`),
+      manzil `https://cleanwater-worker.onrender.com`. Sakkizta env
+      o'zgaruvchi API orqali qo'yildi (2026-08-26).
 
 - [ ] **cron-job.org** — har kuni 04:00 UTC da `POST /jobs/reminders`.
       **Usiz eslatmalar umuman ketmaydi:** bepul Render xizmati uxlaydi va
@@ -150,17 +155,33 @@ Hammasi admin panel orqali kiritiladi, kod tegishi shart emas.
 Batafsil tartib — [DEPLOY-PAAS.md](DEPLOY-PAAS.md), cheklist §7 da.
 Docker/VPS varianti uchun — [DEPLOY.md](DEPLOY.md), cheklist §10 da.
 
-- [ ] Neon: migratsiyalar **direct** satr bilan qo'llangan
-- [ ] Vercel: env lar to'ldirilgan, `/api/health` javob beradi
-- [ ] Render: `sync: false` sirlari kiritilgan, `/health` → `ok`
-- [ ] Telegram webhook **worker manziliga** o'rnatilgan
-      (`getWebhookInfo` da xato yo'q)
-- [ ] Mini App BotFather da **Vercel domeniga** ulangan
-- [ ] cron-job.org da ish yaratilgan va qo'lda bir marta sinalgan (javob 200)
-- [ ] Menejerlar guruhiga sinov arizasi keldi
-- [ ] `sh scripts/smoke.sh https://<sayt>` — tekshiruvlar o'tadi
+- [x] Neon: migratsiyalar **direct** satr bilan qo'llandi (2 ta), natija
+      pooled satr bilan tekshirildi — 10 jadval. Demo seed ham yuklandi.
+- [x] Vercel: env lar to'ldirilgan, `/api/health` → `{"status":"ok"}`
+- [x] Render: sirlar kiritilgan, `/health` → `ok` (HTTP 200).
+      `POST /jobs/reminders`: sirsiz 401, noto'g'ri sir 401, to'g'ri sir 200
+      va `{"sent":0,"skipped":0,"failed":0}` — ya'ni bazaga ulanadi.
+- [x] Telegram webhook worker manziliga o'rnatildi (bot @cvseller_bot).
+      `getWebhookInfo`: `last_error_message` yo'q,
+      `allowed_updates=["message","callback_query"]` — ikkalasi ham bor.
+- [x] Mini App Vercel domeniga ulandi: menyu tugmasi `web_app` turida,
+      `https://cleanwater-two.vercel.app/app`. `/start` buyrug'i ham
+      Telegram ro'yxatiga qo'shildi (`setMyCommands`).
+- [x] cron-job.org da **ikkita** ish: 08:55 isitish (`GET /health`) va
+      09:00 eslatmalar (`POST /jobs/reminders`), Toshkent vaqti. Qo'lda
+      sinaldi — Render logida o'tish ko'rindi.
+- [x] Menejerlar guruhiga sinov arizasi keldi (2026-08-26, egasi tasdiqladi).
+      Ariza bazada ham bor: `bf1cc7fc-b11c-406a-8c30-cbcb4aed24e4`.
+- [x] `sh scripts/smoke.sh https://cleanwater-two.vercel.app` — 15/15 o'tdi
+      (2026-08-26)
 - [ ] **Zaxira**: Neon panelidagi tiklash oynasi ko'rildi va bir marta
       qo'lda dump olindi. Bepul xizmatlarda SLA yo'q.
+- [ ] **Sirlarni yangilash**: deploy jarayonida yozishmaga tushgan ikkita
+      qiymat — Neon `neondb_owner` paroli va `CRON_SECRET`.
+      Neon → Roles → Reset password, so'ng Vercel va Render dagi
+      `DATABASE_URL`; `CRON_SECRET` esa Render da va cron-job.org dagi
+      ikkinchi ishning sarlavhasida yangilanadi. Shoshilinch emas, lekin
+      qilingani ma'qul.
 
 ---
 
